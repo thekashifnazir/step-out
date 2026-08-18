@@ -11,6 +11,17 @@
 <meta property="og:description" content="Sketch a board of community life for any UK place, then ask it a plain question about yourself and get matches with reasons.">
 <meta property="og:image" content="https://stepout.kashifnazir.com/board.jpg">
 <meta property="og:url" content="https://stepout.kashifnazir.com/board">
+<link rel="canonical" href="https://stepout.kashifnazir.com/board">
+<!-- Cloudflare Web Analytics: cookieless, no consent banner. Token injected at publish; empty locally = no-op. -->
+<script defer src="https://static.cloudflareinsights.com/beacon.min.js" data-cf-beacon='{"token":""}'></script>
+<!-- Google tag (gtag.js), GA4. Measurement ID injected at publish; empty locally = no-op (dev traffic uncounted). -->
+<script async src="https://www.googletagmanager.com/gtag/js?id="></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+  gtag('config', '');
+</script>
 <meta name="twitter:card" content="summary_large_image">
 <meta name="twitter:title" content="Step Out">
 <meta name="twitter:description" content="Sketch a board of community life for any UK place, then ask it about yourself.">
@@ -513,14 +524,14 @@ function renderPlace(){
     const dot=document.createElement('span');dot.className='cdot r'+i;b.appendChild(dot);
     b.appendChild(document.createTextNode(`${r.emoji} ${r.label}`));
     b.setAttribute('aria-pressed',String(filter===r.key));
-    b.addEventListener('click',()=>{filter=r.key;renderPlace();});
+    b.addEventListener('click',()=>{filter=r.key;renderPlace();gtag('event','filter_change',{filter:r.key});});
     ctl.appendChild(b);
   });
   ctl.appendChild(Object.assign(document.createElement('div'),{className:'ctl-div'})); // Anchors is a TYPE filter, not a distance ring
   const ab=document.createElement('button');
   ab.className='chip';ab.textContent='⚓ Anchors only';
   ab.setAttribute('aria-pressed',String(filter==='anchor'));
-  ab.addEventListener('click',()=>{filter='anchor';renderPlace();});
+  ab.addEventListener('click',()=>{filter='anchor';renderPlace();gtag('event','filter_change',{filter:'anchor'});});
   ctl.appendChild(ab);
   renderRingmap(cfg);
 
@@ -533,6 +544,7 @@ function renderPlace(){
 
 function switchPlace(id){
   placeId=id;filter="wide"; // reset to the widest ring = everything shown
+  gtag('event','place_switch',{board:id});
   $('matchesSection').hidden=true;$('unmetNote').hidden=true;
   renderPlace();
 }
@@ -702,7 +714,7 @@ const HOSTED=location.protocol!=="file:"&&!["localhost","127.0.0.1"].includes(lo
 // copies. With a proxy, hosted pages are LIVE by default — no key, capped
 // daily. Hosted WITHOUT a proxy falls back to demo mode so no visitor ever
 // hits a key prompt. localhost/file:// keep the live-with-own-key default.
-const PROXY="https://step-out-proxy.kash-553.workers.dev";
+const PROXY="";
 // DEV ONLY: on localhost, point the board at the deployed worker via
 // ?proxy=<worker-url> (one-off) or localStorage "so_proxy" (sticky — set once,
 // every plain reload is then live). Lets the live path be tested without baking
@@ -1390,6 +1402,7 @@ function applyView(){
 function showResult(cfg,parsed,sentence,fromCache){
   lastCfg=cfg;lastParsed=parsed;lastSentence=sentence;lastFromCache=fromCache;pathEnriched=false;
   const hits=computeHits(cfg,parsed);
+  gtag('event','matcher_result',{count:hits.length,unmet:(typeof parsed.unmet==="string"&&!!parsed.unmet)});
   if(!hits.length){
     setStatus("Nothing matched cleanly this time — the full board below has everything.",true);
     return;
@@ -1416,6 +1429,7 @@ matcherForm.addEventListener('submit',async e=>{
   const sentence=matcherInput.value.trim();
   if(!sentence||matcherInput.disabled)return;
   const cfg=cfgFor(placeId);
+  gtag('event','matcher_submit',{board:placeId});
   setBusy(true);setStatus("");
   try{
     const parsed=await getMatches(sentence,cfg);

@@ -11,6 +11,17 @@
 <meta property="og:description" content="Photograph a noticeboard or drop in a PDF and Step Out reads it into clean, structured entries.">
 <meta property="og:image" content="https://stepout.kashifnazir.com/board.jpg">
 <meta property="og:url" content="https://stepout.kashifnazir.com/snap">
+<link rel="canonical" href="https://stepout.kashifnazir.com/snap">
+<!-- Cloudflare Web Analytics: cookieless, no consent banner. Token injected at publish; empty locally = no-op. -->
+<script defer src="https://static.cloudflareinsights.com/beacon.min.js" data-cf-beacon='{"token":""}'></script>
+<!-- Google tag (gtag.js), GA4. Measurement ID injected at publish; empty locally = no-op (dev traffic uncounted). -->
+<script async src="https://www.googletagmanager.com/gtag/js?id="></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+  gtag('config', '');
+</script>
 <meta name="twitter:card" content="summary_large_image">
 <meta name="twitter:title" content="Step Out">
 <meta name="twitter:description" content="Photograph a noticeboard or PDF and Step Out reads it into clean entries.">
@@ -263,7 +274,7 @@ const QS=new URLSearchParams(location.search);
 const HOSTED=location.protocol!=="file:"&&!["localhost","127.0.0.1"].includes(location.hostname);
 // Optional rate-limited proxy (see worker/ in the private repo): set to its URL in the
 // published copy and live calls route there with no key prompt. "" = direct call with your key.
-const PROXY="https://step-out-proxy.kash-553.workers.dev";
+const PROXY="";
 // Snap stays canned even when the proxy is baked in — vision calls are the costliest and most
 // abuse-prone surface, and the canned real-chalkboard read is already the demo. ?mock=0 forces
 // live for dev testing only. (Board & Journey go live via the injected proxy; Snap does not.)

@@ -1,0 +1,13 @@
+# stepout.kashifnazir.com
+# The live matcher/enrichment API is a separate, CORS-locked POST-only worker
+# (step-out-proxy) on another origin — crawlers cannot reach it, so nothing here
+# needs blocking for cost reasons. This file is SEO tidiness only.
+
+User-agent: *
+Allow: /
+
+# /worker/ is a published copy of the proxy source (js + config), reachable by
+# direct link but pointless in a search index — keep it out of results.
+Disallow: /worker/
+
+Sitemap: https://stepout.kashifnazir.com/sitemap.xml

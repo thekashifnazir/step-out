@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Clean URLs (the host 307-redirects /about.html -> /about). Promoted = the five
+     living pages below. Note /hackathon (promoted) is the write-up page with its OWN
+     <title> ("Step Out - the hackathon") and is distinct from /hackathon/ (trailing
+     slash) - the FROZEN archive hub, which reuses the homepage <title>. That frozen
+     hub and its interior prototypes are deliberately NOT promoted here (still crawlable
+     via inbound links): archive material, and promoting the hub would compete with / on
+     the same title. -->
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+  <url>
+    <loc>https://stepout.kashifnazir.com/</loc>
+    <lastmod>2026-08-18</lastmod>
+    <priority>1.0</priority>
+  </url>
+  <url>
+    <loc>https://stepout.kashifnazir.com/about</loc>
+    <lastmod>2026-08-18</lastmod>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://stepout.kashifnazir.com/board</loc>
+    <lastmod>2026-08-18</lastmod>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://stepout.kashifnazir.com/snap</loc>
+    <lastmod>2026-08-18</lastmod>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://stepout.kashifnazir.com/hackathon</loc>
+    <lastmod>2026-08-18</lastmod>
+    <priority>0.6</priority>
+  </url>
+</urlset>
