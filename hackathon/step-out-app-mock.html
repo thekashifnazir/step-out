@@ -1,0 +1,491 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Step Out — app mockup (phone frame)</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,600;9..144,900&family=Inter:wght@400;500;600;700&display=swap');
+  :root{
+    --ink:#243244;--ink-soft:#5a6a7d;--paper:#f8f1e2;--card:#fffdf8;--line:#e7dfcf;
+    --amber:#e08a3c;--amber-deep:#c56a1f;--sky:#4a86a8;--good:#3f8a56;--warn:#b9772a;--red:#b3543f;
+    --radius:16px;--shadow:0 2px 4px rgba(36,50,68,.05),0 10px 30px rgba(36,50,68,.07);--hand:'Fraunces',serif;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{font-family:Inter,system-ui,sans-serif;background:#efe6d2;color:var(--ink);line-height:1.5;-webkit-font-smoothing:antialiased;min-height:100vh;display:flex;flex-direction:column;align-items:center;padding:26px 16px 40px}
+
+  /* ===== minimal page chrome ===== */
+  .page-head{text-align:center;margin-bottom:18px;max-width:52ch}
+  .page-head .kicker{font:700 11px Inter;letter-spacing:.1em;text-transform:uppercase;color:var(--amber-deep)}
+  .page-head h1{font-family:var(--hand);font-weight:900;font-size:26px;letter-spacing:-.02em;margin:4px 0 6px;line-height:1.1}
+  .page-head p{font-size:13px;color:var(--ink-soft)}
+  .page-head p b{color:var(--ink)}
+
+  /* ===== phone bezel ===== */
+  .phone{width:390px;max-width:100%;height:min(844px,86vh);min-height:620px;background:#141b26;border-radius:48px;padding:12px;box-shadow:0 24px 60px rgba(36,50,68,.35),0 4px 12px rgba(36,50,68,.2);position:relative;flex:0 0 auto}
+  .phone-inner{background:var(--paper);border-radius:38px;height:100%;overflow:hidden;display:flex;flex-direction:column;position:relative}
+  .notch{position:absolute;top:12px;left:50%;transform:translateX(-50%);width:120px;height:26px;background:#141b26;border-radius:0 0 16px 16px;z-index:40}
+
+  .statusbar{flex:0 0 auto;display:flex;justify-content:space-between;align-items:center;padding:14px 24px 6px;font:600 13px Inter;color:var(--ink);z-index:30}
+  .statusbar .icons{letter-spacing:2px;font-size:11.5px}
+
+  /* ===== screens ===== */
+  .screens{flex:1 1 auto;position:relative;overflow:hidden}
+  .screen{position:absolute;inset:0;overflow-y:auto;padding:10px 18px 20px;opacity:0;transform:translateX(14px);pointer-events:none;transition:opacity .28s ease,transform .28s cubic-bezier(.22,.7,.3,1)}
+  .screen.active{opacity:1;transform:none;pointer-events:auto}
+  @media (prefers-reduced-motion:reduce){
+    .screen{transition:none;transform:none}
+  }
+
+  .app-kicker{font:700 10.5px Inter;letter-spacing:.1em;text-transform:uppercase;color:var(--amber-deep)}
+  .screen h2{font-family:var(--hand);font-weight:900;font-size:27px;letter-spacing:-.02em;line-height:1.08;margin:4px 0 8px}
+  .screen .lede{font-size:13.5px;color:var(--ink-soft);margin-bottom:14px}
+  .back{display:inline-flex;gap:6px;align-items:center;border:none;background:none;font:600 13.5px Inter;color:var(--sky);cursor:pointer;padding:6px 0;margin-bottom:2px}
+
+  /* Ask screen */
+  .askbox{background:var(--card);border:2px solid var(--line);border-radius:22px;padding:14px;box-shadow:var(--shadow)}
+  .askbox textarea{width:100%;border:none;background:none;font:500 16.5px Inter;color:var(--ink);line-height:1.45;resize:none;outline:none;min-height:92px}
+  .askbox .askrow{display:flex;justify-content:space-between;align-items:center;margin-top:6px}
+  .mic{width:40px;height:40px;border-radius:50%;border:2px solid var(--line);background:var(--paper);font-size:17px;cursor:pointer}
+  .send{font:600 14.5px Inter;background:var(--amber-deep);color:#fff;border:none;border-radius:999px;padding:11px 20px;cursor:pointer}
+  .send:hover{background:var(--amber)}
+  .askmeta{font-size:11.5px;color:var(--ink-soft);font-style:italic;margin-top:8px}
+  .recent-label{font:600 12px Inter;letter-spacing:.06em;text-transform:uppercase;color:var(--ink-soft);margin:20px 0 8px}
+  .recent{display:flex;flex-direction:column;gap:8px}
+  .recent button{text-align:left;background:var(--card);border:2px solid var(--line);border-radius:14px;padding:11px 14px;font:500 13.5px Inter;color:var(--ink);cursor:pointer;transition:border-color .15s;display:flex;gap:9px;align-items:flex-start}
+  .recent button:hover{border-color:var(--amber)}
+  .recent .q{color:var(--amber-deep);font-weight:700;flex:0 0 auto}
+
+  /* Matches screen */
+  .askquote{background:var(--card);border:2px solid var(--line);border-radius:16px 16px 16px 4px;padding:10px 14px;font-size:13px;color:var(--ink-soft);font-style:italic;margin-bottom:12px}
+  .honest{font-size:11px;color:var(--ink-soft);font-style:italic;margin:2px 0 12px}
+  .mcard{background:var(--card);border:2px solid var(--amber);border-radius:var(--radius);padding:15px;box-shadow:var(--shadow);display:flex;flex-direction:column;gap:8px;margin-bottom:12px}
+  .mcard .match-reason{background:#fbeee0;border-left:4px solid var(--amber);border-radius:0 8px 8px 0;padding:10px 12px;font-size:14.5px;line-height:1.55;color:var(--ink);font-weight:500}
+  .mcard h3{font-family:var(--hand);font-weight:600;font-size:18px;line-height:1.25}
+  .mcard .rhythm{font-size:12.5px;color:var(--sky);font-weight:600}
+  .mcard .src{font-size:11px;color:var(--ink-soft);opacity:.85;border-top:1px solid var(--line);padding-top:8px}
+  .nextask{background:none;border:2px dashed var(--line);border-radius:14px;padding:12px 14px;width:100%;text-align:left;font:500 13px Inter;color:var(--ink-soft);cursor:pointer;margin-top:4px}
+  .nextask:hover{border-color:var(--amber)}
+  .nextask b{color:var(--ink);display:block;margin-bottom:2px}
+
+  /* Latent screen */
+  .latent-hero{background:#fbeee0;border:2px dashed var(--amber-deep);border-radius:var(--radius);padding:18px 16px;margin-bottom:14px}
+  .latent-hero .bell{font-size:26px;margin-bottom:6px;display:block}
+  .latent-hero h3{font-family:var(--hand);font-weight:600;font-size:20px;line-height:1.3;margin-bottom:6px}
+  .latent-hero p{font-size:13.5px;color:var(--ink-soft)}
+  .actions{display:flex;flex-direction:column;gap:9px}
+  .action{background:var(--card);border:2px solid var(--line);border-radius:14px;padding:12px 14px;text-align:left;cursor:pointer;transition:border-color .15s;display:flex;flex-direction:column;gap:2px}
+  .action:hover{border-color:var(--amber)}
+  .action .verb{font:700 10.5px Inter;letter-spacing:.06em;text-transform:uppercase;color:var(--amber-deep)}
+  .action .what{font:600 14px Inter;color:var(--ink)}
+  .illus{font-size:11px;color:var(--ink-soft);font-style:italic;font-weight:400;text-transform:none;letter-spacing:0}
+
+  /* Language first-run screen */
+  .lang-wrap{display:flex;flex-direction:column;gap:10px;margin-top:6px}
+  .lang-opt{background:var(--card);border:2px solid var(--line);border-radius:16px;padding:15px 16px;text-align:left;cursor:pointer;transition:border-color .15s;display:flex;flex-direction:column;gap:2px}
+  .lang-opt:hover{border-color:var(--amber)}
+  .lang-opt .native{font-family:var(--hand);font-weight:600;font-size:19px;color:var(--ink)}
+  .lang-opt .en-name{font:500 12px Inter;color:var(--ink-soft)}
+  .lang-skip{border:none;background:none;font:600 13.5px Inter;color:var(--sky);cursor:pointer;margin-top:12px;padding:6px 0}
+  .lang-ground{font-size:11.5px;color:var(--ink-soft);font-style:italic;margin-top:14px}
+
+  /* Match detail screen */
+  .mcard[data-go]{cursor:pointer}
+  .taphint{font-size:11.5px;color:var(--sky);font-weight:600}
+  .ddesc{font-size:13.5px;color:var(--ink-soft)}
+  .went{width:100%;font:600 16px Inter;background:var(--amber-deep);color:#fff;border:none;border-radius:16px;padding:16px;cursor:pointer;margin-top:14px}
+  .went:hover{background:var(--amber)}
+  .metric-note{font-size:11.5px;color:var(--ink-soft);text-align:center;margin-top:8px}
+  .quiet{display:none;text-align:center;padding:40px 8px 12px}
+  .quiet .tick{font-size:34px;display:block;margin-bottom:10px}
+  .quiet h3{font-family:var(--hand);font-weight:900;font-size:24px;margin-bottom:8px}
+  .quiet p{font-size:14px;color:var(--ink-soft);max-width:30ch;margin:0 auto 10px}
+  #s-detail.went-done .detail-body{display:none}
+  #s-detail.went-done .quiet{display:block}
+
+  /* Organiser screen */
+  .orgdesc{font-size:13px;color:var(--ink-soft)}
+  .profile{background:#fbeee0;border:2px dashed var(--amber-deep);border-radius:var(--radius);padding:14px 16px;margin-top:14px}
+  .profile h4{font-family:var(--hand);font-weight:600;font-size:17px;margin-bottom:4px}
+  .ask-first{background:var(--card);border-left:4px solid var(--amber);border-radius:0 8px 8px 0;padding:9px 12px;font-size:13px;line-height:1.5;margin-top:8px}
+  .org-link{display:block;margin:18px auto 0;border:none;background:none;font:600 12px Inter;color:var(--ink-soft);cursor:pointer;text-decoration:underline}
+  .org-link:hover{color:var(--amber-deep)}
+
+  /* Alerts screen */
+  .lockwrap{background:linear-gradient(160deg,#243244,#141b26);border-radius:20px;padding:34px 14px 40px;margin-bottom:14px;text-align:center}
+  .locktime{font-family:var(--hand);font-weight:600;font-size:44px;color:#fffdf8;letter-spacing:-.02em}
+  .lockdate{font:500 13px Inter;color:rgba(255,253,248,.75);margin-bottom:22px}
+  .notif{background:rgba(255,253,248,.96);border-radius:18px;padding:12px 14px;text-align:left;display:flex;gap:11px;align-items:flex-start;box-shadow:0 8px 24px rgba(0,0,0,.25)}
+  .appicon{flex:0 0 38px;width:38px;height:38px;border-radius:10px;background:var(--amber-deep);color:#fff;font-family:var(--hand);font-weight:900;font-size:20px;display:flex;align-items:center;justify-content:center}
+  .notif .body{flex:1}
+  .notif .approw{display:flex;justify-content:space-between;font:600 10.5px Inter;letter-spacing:.05em;text-transform:uppercase;color:var(--ink-soft);margin-bottom:2px}
+  .notif .msg{font-size:13.5px;line-height:1.45;color:var(--ink)}
+  .rule{background:var(--card);border:2px solid var(--line);border-radius:var(--radius);padding:14px 16px;box-shadow:var(--shadow)}
+  .rule h4{font-family:var(--hand);font-weight:600;font-size:16px;margin-bottom:4px}
+  .rule p{font-size:13.5px;color:var(--ink-soft)}
+  .rule p b{color:var(--ink)}
+
+  /* Board screen */
+  .chips{display:flex;gap:7px;flex-wrap:wrap;margin:2px 0 12px}
+  .chip{border:2px solid var(--line);background:var(--card);border-radius:999px;padding:7px 12px;font:600 12px Inter;color:var(--ink-soft);cursor:pointer;transition:all .15s}
+  .chip[aria-pressed="true"]{background:var(--ink);color:#fff;border-color:var(--ink)}
+  .chip:hover{border-color:var(--amber)}
+  .bcard{background:var(--card);border:2px solid var(--line);border-radius:var(--radius);padding:13px 14px;box-shadow:var(--shadow);display:flex;flex-direction:column;gap:6px;margin-bottom:10px}
+  .bcard.anchor{border-color:var(--amber)}
+  .bcard .top{display:flex;justify-content:space-between;align-items:flex-start;gap:8px}
+  .cat{font:700 10px Inter;letter-spacing:.06em;text-transform:uppercase;color:var(--amber-deep);background:#fbeee0;padding:3px 8px;border-radius:6px}
+  .anchor-flag{font:700 9.5px Inter;letter-spacing:.05em;text-transform:uppercase;background:var(--ink);color:#fff;padding:3px 7px;border-radius:6px}
+  .bcard h3{font-family:var(--hand);font-weight:600;font-size:16px;line-height:1.25}
+  .bcard .rhythm{font-size:12px;color:var(--sky);font-weight:600}
+  .bcard .tier{font-size:11.5px;font-weight:600}
+  .tier.hyper{color:var(--good)}
+  .tier.local{color:var(--warn)}
+  .tier.camden{color:var(--red)}
+  .count{font-size:11.5px;color:var(--ink-soft);margin-bottom:10px}
+
+  /* Tab bar */
+  .tabbar{flex:0 0 auto;display:flex;border-top:2px solid var(--line);background:var(--card);padding:8px 10px 16px;z-index:30}
+  .tab{flex:1;border:none;background:none;font:600 11px Inter;color:var(--ink-soft);cursor:pointer;display:flex;flex-direction:column;gap:3px;align-items:center;padding:6px 0;border-radius:12px}
+  .tab .ico{font-size:20px;line-height:1}
+  .tab[aria-pressed="true"]{color:var(--amber-deep)}
+  .tab[aria-pressed="true"] .ico{transform:translateY(-1px)}
+
+  .page-foot{margin-top:16px;font-size:12px;color:var(--ink-soft);text-align:center;max-width:52ch}
+
+  /* ===== Step Out product nav (shared contract — stream S; page-chrome variant) ===== */
+  html{scroll-padding-top:64px}
+  .sonav{position:sticky;top:0;z-index:200;display:flex;gap:14px;align-items:center;background:#efe6d2;border-bottom:1px solid rgba(36,50,68,.14);align-self:stretch;margin:-26px -16px 22px;padding:10px 20px;overflow-x:auto;scrollbar-width:none}
+  .sonav::-webkit-scrollbar{display:none}
+  .sonav-brand{font-family:var(--hand);font-weight:600;font-size:17px;color:var(--ink);text-decoration:none;flex:0 0 auto}
+  .sonav-links{display:flex;gap:8px;flex:0 0 auto}
+  .sonav-links a{font:600 13px Inter,system-ui,sans-serif;color:var(--ink-soft);text-decoration:none;border:2px solid var(--line);background:var(--card);border-radius:999px;padding:6px 13px;white-space:nowrap;flex:0 0 auto;transition:all .15s}
+  .sonav-links a:hover{border-color:var(--amber)}
+  .sonav-links a[aria-current="page"]{background:var(--ink);border-color:var(--ink);color:#fff}
+  .sonav-group{font:700 10px Inter,system-ui,sans-serif;letter-spacing:.12em;text-transform:uppercase;color:var(--ink-soft);flex:0 0 auto;align-self:center;margin-left:4px}
+  .sonav-group--concepts{border-left:1px solid var(--line);padding-left:14px;margin-left:10px}
+  .sonav-links a.sonav-concept{font-size:12px;padding:5px 11px;opacity:.72}
+  .sonav-links a.sonav-concept:hover,.sonav-links a.sonav-concept[aria-current="page"]{opacity:1}
+</style>
+</head>
+<body>
+<nav class="sonav" aria-label="Step Out surfaces">
+  <a class="sonav-brand" href="index.html">🚪 Step&nbsp;Out</a>
+  <div class="sonav-links">
+    <span class="sonav-group">Use it</span>
+    <a href="step-out-somers-town-test.html">Board</a>
+    <a href="step-out-journey-test.html">Journey</a>
+    <a href="step-out-snap-test.html">Snap</a>
+    <a href="step-out-places-test.html">Places</a>
+    <span class="sonav-group sonav-group--concepts">Concepts</span>
+    <a class="sonav-concept" href="step-out-latent-test.html">Demand</a>
+    <a class="sonav-concept" href="step-out-organiser-test.html">Organisers</a>
+    <a class="sonav-concept" href="step-out-app-mock.html" aria-current="page">App</a>
+  </div>
+</nav>
+
+<div class="page-head">
+  <div class="kicker">Prop · same product, phone-shaped</div>
+  <h1>Step Out as the app in your pocket</h1>
+  <p>Click through: <b>language pick → Ask → Matches → “nothing exists yet” → “I went ✓”</b> · tab bar switches · “For organisers” on the Ask footer. Canned playback — no live calls.</p>
+</div>
+
+<div class="phone">
+  <div class="phone-inner">
+    <div class="notch"></div>
+    <div class="statusbar"><span>17:45</span><span class="icons">▪▪▪ ⌁ ▮</span></div>
+
+    <div class="screens">
+
+      <!-- 0 · FIRST RUN · LANGUAGE PICK -->
+      <section class="screen active" id="s-lang">
+        <div class="app-kicker">First open · Step Out</div>
+        <h2>কোন ভাষায়? / In which language? / Luqadee?</h2>
+        <p class="lede">Ask in whatever language feels like home — replies come back the same way.</p>
+        <div class="lang-wrap">
+          <button class="lang-opt" type="button" data-lang="en"><span class="native">English</span><span class="en-name">Continue in English</span></button>
+          <button class="lang-opt" type="button" data-lang="bn"><span class="native">বাংলা</span><span class="en-name">Bangla</span></button>
+          <button class="lang-opt" type="button" data-lang="so"><span class="native">Soomaali</span><span class="en-name">Somali</span></button>
+        </div>
+        <button class="lang-skip" type="button" data-go="s-ask">Skip for now ›</button>
+        <p class="lang-ground">Grounded, not guessed: these are Somers Town's languages — the Job Hub's own logo is trilingual (English · কাজের হাব · Goobta Shaqo Raadinta).</p>
+      </section>
+
+      <!-- 1 · ASK (home) -->
+      <section class="screen" id="s-ask">
+        <div class="app-kicker">Step Out · Somers Town, NW1</div>
+        <h2>Tell it like you'd tell a neighbour</h2>
+        <p class="lede">No feed. No sign-up wall. No browsing homework. Say how things are — any language works.</p>
+        <div class="askbox">
+          <textarea id="askInput" aria-label="Your ask">I moved here two months ago, I'm not working and I barely know anyone. I'd love something regular near me — and eventually I need to find work.</textarea>
+          <div class="askrow">
+            <button class="mic" type="button" title="Voice input (illustrative)" aria-label="Voice input, illustrative">🎙️</button>
+            <button class="send" type="button" id="sendBtn">Find my way in</button>
+          </div>
+        </div>
+        <p class="askmeta" id="askMeta">Mic and asks are illustrative — this mockup replays real model outputs from today.</p>
+        <div class="recent-label">Asked round here recently</div>
+        <div class="recent">
+          <button type="button" data-go="s-matches"><span class="q">💬</span><span>“I moved here two months ago, I'm not working and I barely know anyone…”</span></button>
+          <button type="button" data-go="s-latent"><span class="q">💬</span><span>“I want to join a running group nearby — mornings, before work.”</span></button>
+        </div>
+        <button class="org-link" type="button" data-go="s-organiser">For organisers — see what your community needs ›</button>
+      </section>
+
+      <!-- 2 · MATCHES -->
+      <section class="screen" id="s-matches">
+        <button class="back" type="button" data-go="s-ask">‹ Ask</button>
+        <div class="app-kicker">Your matches</div>
+        <h2>Picked for what you told us</h2>
+        <div class="askquote">“I moved here two months ago, I'm not working and I barely know anyone. I'd love something regular near me — and eventually I need to find work.”</div>
+        <p class="honest">Responses shown are real model outputs from today, replayed.</p>
+
+        <article class="mcard" data-go="s-detail" role="button" tabindex="0" aria-label="Open Women's Coffee Mornings details">
+          <div class="match-reason">💬 A three-minute walk from your building, Mondays 10.30am–12pm at the STCA Café</div>
+          <h3>Women's Coffee Mornings</h3>
+          <div class="rhythm">Mondays 10.30am–12pm, STCA Café, 150 Ossulston St</div>
+          <div class="src">Source: Living Centre newsletter (PDF)</div>
+          <span class="taphint">Tap for details ›</span>
+        </article>
+
+        <article class="mcard">
+          <div class="match-reason">💬 A lovely first step when you're new: Wednesday evenings, no audition, no experience needed — just turn up and sing.</div>
+          <h3>Groove Chorus</h3>
+          <div class="rhythm">Wednesdays 6.45–8.45pm, the Living Centre, 2 Ossulston St</div>
+          <div class="src">Source: Somers Town Community Newsletter, June–July 2026, p.3</div>
+        </article>
+
+        <article class="mcard">
+          <div class="match-reason">💬 Twice a week, hands-on and low-key — you can settle in at a machine before you feel like talking, and it's the same faces every week.</div>
+          <h3>Sewing Socials</h3>
+          <div class="rhythm">Mondays 1–3pm &amp; Saturdays 11am–2pm, STCA Café</div>
+          <div class="src">Source: Living Centre newsletter (PDF)</div>
+        </article>
+
+        <button class="nextask" type="button" data-go="s-latent">
+          <b>Another ask from today:</b>
+          “I want to join a running group nearby — mornings, before work.” · See what happened ›
+        </button>
+      </section>
+
+      <!-- 2b · MATCH DETAIL + THE METRIC -->
+      <section class="screen" id="s-detail">
+        <button class="back" type="button" data-go="s-matches">‹ Matches</button>
+        <div class="detail-body">
+          <div class="app-kicker">Match detail <span class="illus">· illustrative</span></div>
+          <h2>Women's Coffee Mornings</h2>
+          <article class="mcard">
+            <div class="match-reason">💬 A three-minute walk from your building, Mondays 10.30am–12pm at the STCA Café</div>
+            <div class="rhythm">Mondays 10.30am–12pm, STCA Café, 150 Ossulston St</div>
+            <p class="ddesc">Tea, coffee, biscuits and conversation about health, nutrition and relationships. A three-minute walk from this building — and one of the easiest front doors in NW1.</p>
+            <div class="src">Source: Living Centre newsletter (PDF)</div>
+          </article>
+          <button class="went" type="button" id="wentBtn">I went ✓</button>
+          <p class="metric-note">Step Out counts second visits, not daily actives.</p>
+        </div>
+        <div class="quiet">
+          <span class="tick">🌱</span>
+          <h3>Welcome back.</h3>
+          <p>Going again? Second visits are the whole point — we succeed when you stop needing us.</p>
+          <p class="illus">illustrative</p>
+          <button class="back" type="button" data-go="s-matches">‹ Back to matches</button>
+        </div>
+      </section>
+
+      <!-- 3 · LATENT (the differentiator) -->
+      <section class="screen" id="s-latent">
+        <button class="back" type="button" data-go="s-matches">‹ Matches</button>
+        <div class="app-kicker">Nothing to match — yet <span class="illus">· illustrative</span></div>
+        <h2>Nothing like that exists here yet.</h2>
+        <div class="askquote">“I want to join a running group nearby — mornings, before work.”</div>
+        <div class="latent-hero">
+          <span class="bell">🔔</span>
+          <h3>You're the 5th person to ask this month.</h3>
+          <p>Step Out doesn't just match to what exists — it notices what keeps being asked for.</p>
+        </div>
+        <div class="actions">
+          <button class="action" type="button"><span class="verb">Widen</span><span class="what">See one a tier up</span></button>
+          <button class="action" type="button"><span class="verb">Create</span><span class="what">Start one — the hall is free Tuesdays</span></button>
+          <button class="action" type="button"><span class="verb">Connect</span><span class="what">Tell an existing club</span></button>
+          <button class="action" type="button"><span class="verb">Inform</span><span class="what">Add your ask to the neighbourhood count</span></button>
+        </div>
+      </section>
+
+      <!-- 4 · ALERTS (one ping) -->
+      <section class="screen" id="s-alerts">
+        <div class="app-kicker">Alerts <span class="illus">· illustrative</span></div>
+        <h2>One ping, done right</h2>
+        <div class="lockwrap" aria-label="Lockscreen notification mock">
+          <div class="locktime">17:45</div>
+          <div class="lockdate">Wednesday 30 July</div>
+          <div class="notif">
+            <div class="appicon">S</div>
+            <div class="body">
+              <div class="approw"><span>Step Out</span><span>now</span></div>
+              <div class="msg">Groove Chorus starts in an hour, two streets away. First visit? Just turn up.</div>
+            </div>
+          </div>
+        </div>
+        <div class="rule">
+          <h4>The product rule</h4>
+          <p><b>One message, only when something you'd genuinely go to starts near you.</b> Never a feed.</p>
+        </div>
+      </section>
+
+      <!-- 5 · BOARD -->
+      <section class="screen" id="s-board">
+        <div class="app-kicker">The board · Somers Town, NW1</div>
+        <h2>How local is local?</h2>
+        <div class="chips" id="tierChips">
+          <button class="chip" data-tier="all" aria-pressed="true">Everything</button>
+          <button class="chip" data-tier="hyper" aria-pressed="false">🏘️ Hyper-local</button>
+          <button class="chip" data-tier="local" aria-pressed="false">🚶 Local</button>
+          <button class="chip" data-tier="camden" aria-pressed="false">🗺️ Camden</button>
+        </div>
+        <p class="count" id="boardCount"></p>
+        <div id="boardGrid"></div>
+      </section>
+
+      <!-- 6 · ORGANISER MODE -->
+      <section class="screen" id="s-organiser">
+        <button class="back" type="button" data-go="s-ask">‹ Ask</button>
+        <div class="app-kicker">Organiser mode <span class="illus">· sample data, illustrative</span></div>
+        <h2>Your community needs</h2>
+        <p class="lede">The same matcher, pointed the other way: what the neighbourhood is short of, and who nearby could fill it.</p>
+        <article class="bcard">
+          <div class="top"><span class="cat">Civic</span></div>
+          <h3>Neighbourhood Forum needs a treasurer</h3>
+          <div class="rhythm">Somers Town Neighbourhood Forum · open meetings monthly, the Living Centre</div>
+          <p class="orgdesc">Resident-led forum shaping the neighbourhood plan — a give-back with a seat at the table. Source: somerstownplan.info</p>
+        </article>
+        <article class="bcard">
+          <div class="top"><span class="cat">Give back</span></div>
+          <h3>Foodbank needs weekday volunteers</h3>
+          <div class="rhythm">Weekday daytimes — the hardest slots to fill</div>
+          <p class="orgdesc">And it's reciprocal, not charity-shaped: volunteering here helps with your weekly shop — heard on the ground in Somers Town today.</p>
+        </article>
+        <div class="profile">
+          <h4>1 neighbour looks like a match</h4>
+          <p class="orgdesc">Retired accountant, NW1 · weekday mornings free · wants to give back <span class="illus">· sample profile</span></p>
+          <div class="ask-first"><b>Ask first:</b> “Would you sit in on one forum meeting — no commitment — and see how it feels?” Low-pressure beats a job description.</div>
+        </div>
+      </section>
+
+    </div>
+
+    <div class="tabbar">
+      <button class="tab" data-tab="s-ask" aria-pressed="true"><span class="ico">💬</span>Ask</button>
+      <button class="tab" data-tab="s-board" aria-pressed="false"><span class="ico">📌</span>Board</button>
+      <button class="tab" data-tab="s-alerts" aria-pressed="false"><span class="ico">🔔</span>Alerts</button>
+    </div>
+  </div>
+</div>
+
+<p class="page-foot">Every entry, ask and reason above is real — from the Somers Town board's public-source data and today's live model runs. Same product as the board demo: offline-first stays the point; this is what it becomes in your pocket.</p>
+
+<script>
+// Real Somers Town entries (verbatim subset of the board demo's DATA array).
+const BOARD=[
+  {cat:"Social",t:"Women's Coffee Mornings",rhythm:"Mondays 10.30am–12pm, STCA Café, 150 Ossulston St",tier:"hyper",anchor:true},
+  {cat:"Craft",t:"Sewing Socials",rhythm:"Mondays 1–3pm & Saturdays 11am–2pm, STCA Café",tier:"hyper",anchor:true},
+  {cat:"Music",t:"Groove Chorus",rhythm:"Wednesdays 6.45–8.45pm, the Living Centre, 2 Ossulston St",tier:"hyper",anchor:true},
+  {cat:"Outdoors / growing",t:"Grow-it-Yourself",rhythm:"Tuesdays 10.30am–12.30pm, rooftop garden, Ossulston St",tier:"hyper",anchor:true},
+  {cat:"Market",t:"Chalton Street Market",rhythm:"Fridays ~10am–4pm, Chalton Street",tier:"hyper",anchor:true},
+  {cat:"Give back",t:"Living Centre Volunteering",rhythm:"Ongoing — drop in any weekday and ask for the Job Hub team",tier:"hyper",anchor:true},
+  {cat:"Work & skills",t:"Somers Town Job Hub",rhythm:"Mon–Fri 9am–5pm by appointment, the Living Centre, 2 Ossulston St",tier:"hyper",anchor:false},
+  {cat:"Learning",t:"Community archiving course — 'The stories we tell'",rhythm:"8 weeks, British Library, 96 Euston Rd",tier:"local",anchor:false},
+  {cat:"Give back",t:"Healthwatch Camden volunteering",rhythm:"Ongoing, borough-wide · 16+ · travel reimbursed",tier:"camden",anchor:true}
+];
+const TIER_LABEL={hyper:'<span class="tier hyper">🏘️ Hyper-local — minutes on foot</span>',
+  local:'<span class="tier local">🚶 Local — King\'s Cross / Euston walk</span>',
+  camden:'<span class="tier camden">🗺️ Wider Camden — borough-wide</span>'};
+
+const boardGrid=document.getElementById('boardGrid');
+const boardCount=document.getElementById('boardCount');
+let tierFilter="all";
+
+function renderBoard(){
+  const items=BOARD.filter(i=>tierFilter==="all"||i.tier===tierFilter);
+  boardGrid.innerHTML=items.map(i=>`
+    <article class="bcard${i.anchor?' anchor':''}">
+      <div class="top"><span class="cat">${i.cat}</span>${i.anchor?'<span class="anchor-flag">⚓ anchor</span>':''}</div>
+      <h3>${i.t}</h3>
+      <div class="rhythm">${i.rhythm}</div>
+      ${TIER_LABEL[i.tier]}
+    </article>`).join('');
+  boardCount.textContent=`${items.length} shown · ${BOARD.length} on the board · all real, all public sources`;
+}
+document.getElementById('tierChips').addEventListener('click',e=>{
+  const chip=e.target.closest('.chip');if(!chip)return;
+  tierFilter=chip.dataset.tier;
+  document.querySelectorAll('#tierChips .chip').forEach(c=>c.setAttribute('aria-pressed',String(c===chip)));
+  renderBoard();
+});
+renderBoard();
+
+// Navigation: screens + tab bar. Matches/latent/detail/lang/organiser live under the Ask tab.
+const TAB_OF={"s-lang":"s-ask","s-ask":"s-ask","s-matches":"s-ask","s-detail":"s-ask","s-latent":"s-ask","s-organiser":"s-ask","s-alerts":"s-alerts","s-board":"s-board"};
+function go(id){
+  document.querySelectorAll('.screen').forEach(s=>s.classList.toggle('active',s.id===id));
+  document.querySelectorAll('.tab').forEach(t=>t.setAttribute('aria-pressed',String(t.dataset.tab===TAB_OF[id])));
+  const sc=document.getElementById(id);if(sc)sc.scrollTop=0;
+}
+document.addEventListener('click',e=>{
+  const nav=e.target.closest('[data-go]');if(nav){go(nav.dataset.go);return;}
+  const tab=e.target.closest('.tab');if(tab)go(tab.dataset.tab);
+});
+document.getElementById('sendBtn').addEventListener('click',()=>go('s-matches'));
+// Keyboard access for non-button data-go targets (the tappable match card)
+document.addEventListener('keydown',e=>{
+  if(e.key!=='Enter'&&e.key!==' ')return;
+  const nav=e.target.closest('[data-go]');
+  if(nav&&nav.tagName!=='BUTTON'){e.preventDefault();go(nav.dataset.go);}
+});
+
+// First-run language pick. Real strings only: the ask is the runsheet's Bengali
+// sentence 2 (stream C final); the reply fragment is from today's live battery run.
+// Full Bengali replies exist only in the rehearsal replay cache, so they are not shown.
+let LANG="en";
+const askInput=document.getElementById('askInput'),askMeta=document.getElementById('askMeta');
+const ASK_EN=askInput.value,META_EN=askMeta.textContent;
+const ASK_BN="আমি এখানে নতুন এসেছি, ইংরেজি ভালো বলতে পারি না — মানুষের সাথে পরিচয় করার মতো কিছু আছে কি?";
+const META_BN="উত্তরও আসে বাংলায় — আজকের সত্যি উত্তর থেকে: “সোমবার দুপুর ১–৩টা…” · Real Bengali ask and reply fragment from today's live runs, replayed.";
+function applyLang(){
+  if(LANG==="bn"){askInput.value=ASK_BN;askMeta.textContent=META_BN;}
+  else if(LANG==="so"){askInput.value=ASK_EN;askMeta.textContent=META_EN+" Soomaali strings land with the next data round — English shown for now.";}
+  else{askInput.value=ASK_EN;askMeta.textContent=META_EN;}
+}
+document.querySelectorAll('.lang-opt').forEach(b=>b.addEventListener('click',()=>{LANG=b.dataset.lang;applyLang();go('s-ask');}));
+
+// "I went" — the metric a judge can press: second visits, not DAUs.
+document.getElementById('wentBtn').addEventListener('click',()=>{
+  document.getElementById('s-detail').classList.add('went-done');
+  document.getElementById('s-detail').scrollTop=0;
+});
+</script>
+<script>
+/* Museum frame — appears ONLY when this page is served from the frozen
+   /hackathon/ copy of the site. Everything above this line is the preserved
+   artifact; this bar is the frame around it, pointing back to the live site. */
+if(location.pathname.includes('/hackathon/')){
+  /* Docs-site pattern (Read the Docs / Wayback): the WHOLE banner is one big
+     link back to the live site; fixed positioning so no page layout can
+     swallow or reflow it. */
+  var __ft=document.createElement('a');
+  __ft.id='frozentop';
+  __ft.href='../index.html';
+  __ft.style.cssText='position:fixed;top:0;left:0;right:0;z-index:400;display:flex;gap:14px;align-items:center;justify-content:center;flex-wrap:wrap;background:#243244;color:#fff;padding:8px 16px;font:600 13.5px Inter,system-ui,sans-serif;text-decoration:none;box-shadow:0 3px 12px rgba(36,50,68,.3);cursor:pointer';
+  __ft.innerHTML='<span>\ud83c\udfc1 FROZEN \u2014 the hackathon build, 30 July 2026</span><span style="background:#e08a3c;color:#243244;border-radius:999px;padding:5px 15px;font-weight:700;white-space:nowrap">\u21a9 Step out to the live site</span><span id="frozenstory" style="color:#e08a3c;text-decoration:underline">or read the story</span>';
+  __ft.querySelector('#frozenstory').addEventListener('click',function(e){e.preventDefault();e.stopPropagation();location.href='../hackathon.html';});
+  document.body.prepend(__ft);
+  document.body.style.paddingTop='50px';
+  var __nav=document.querySelector('.sonav');if(__nav)__nav.style.top='46px';
+  var __fb=document.createElement('div');
+  __fb.setAttribute('id','frozenbar');
+  __fb.style.cssText='position:fixed;left:0;right:0;bottom:0;z-index:300;background:#243244;color:#fff;padding:10px 16px;text-align:center;font:600 13px Inter,system-ui,sans-serif;box-shadow:0 -4px 14px rgba(36,50,68,.18)';
+  __fb.innerHTML='\ud83c\udfc1 You\u2019re inside the frozen hackathon build \u00b7 <a href="../index.html" style="color:#e08a3c;font-weight:700">\u21a9 back to the live site</a> \u00b7 <a href="../hackathon.html" style="color:#e08a3c;font-weight:700">the story \u2192</a>';
+  document.body.appendChild(__fb);
+  document.body.style.paddingBottom='56px';
+}
+</script>
+</body>
+</html>

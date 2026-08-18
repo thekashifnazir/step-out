@@ -1,0 +1,683 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Step Out — one engine, any place</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,600;9..144,900&family=Inter:wght@400;500;600;700&display=swap');
+  :root{
+    --ink:#243244;--ink-soft:#5a6a7d;--paper:#f8f1e2;--card:#fffdf8;--line:#e7dfcf;
+    --amber:#e08a3c;--amber-deep:#c56a1f;--sky:#4a86a8;--good:#3f8a56;--warn:#b9772a;--red:#b3543f;
+    --radius:16px;--shadow:0 2px 4px rgba(36,50,68,.05),0 10px 30px rgba(36,50,68,.07);--hand:'Fraunces',serif;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{font-family:Inter,system-ui,sans-serif;background:var(--paper);color:var(--ink);line-height:1.5;-webkit-font-smoothing:antialiased}
+  .wrap{max-width:940px;margin:0 auto;padding:0 20px}
+  header{padding:30px 0 10px}
+  .kicker{font:700 12px Inter;letter-spacing:.1em;text-transform:uppercase;color:var(--amber-deep)}
+  h1{font-family:var(--hand);font-weight:900;font-size:clamp(28px,5vw,40px);letter-spacing:-.02em;margin:6px 0 8px;line-height:1.05}
+  .sub{color:var(--ink-soft);font-size:15.5px;max-width:62ch}
+  .loc{display:inline-flex;gap:8px;align-items:center;background:var(--card);border:2px solid var(--line);border-radius:999px;padding:8px 16px;font:600 14px Inter;margin-top:14px}
+  .disclaimer{font-size:12.5px;color:var(--ink-soft);font-style:italic;margin-top:10px;max-width:70ch}
+
+  .places{display:flex;gap:8px;flex-wrap:wrap;margin:20px 0 4px}
+  .pbtn{border:2px solid var(--line);background:var(--card);border-radius:999px;padding:10px 16px;font:600 14px Inter;color:var(--ink-soft);cursor:pointer;transition:all .16s;display:flex;flex-direction:column;align-items:flex-start;line-height:1.2}
+  .pbtn small{font-weight:400;font-size:11px;opacity:.8}
+  .pbtn[aria-pressed="true"]{background:var(--ink);color:#fff;border-color:var(--ink)}
+  .pbtn:hover{border-color:var(--amber)}
+
+  /* group labels: the honesty split — verified boards vs live sketch */
+  .glabel{font:700 11.5px Inter;letter-spacing:.08em;text-transform:uppercase;color:var(--ink-soft);margin:20px 0 0}
+  .pbtn.sketchbtn{border-style:dashed;border-color:var(--amber)}
+  .pbtn.sketchbtn[aria-pressed="true"]{background:var(--amber-deep);border-color:var(--amber-deep);color:#fff}
+  .sketchform{display:flex;gap:8px;flex-wrap:wrap;margin:10px 0 0}
+  .sketchform input{flex:1 1 340px;border:2px solid var(--line);background:var(--card);border-radius:12px;padding:11px 14px;font:400 14.5px Inter;color:var(--ink)}
+  .sketchform input:focus{outline:none;border-color:var(--amber)}
+  .sketchform button{border:2px solid var(--ink);background:var(--ink);color:#fff;border-radius:12px;padding:11px 18px;font:600 14px Inter;cursor:pointer}
+  .sketchform button[disabled]{opacity:.45;cursor:progress}
+  .sketchstatus{font-size:13px;color:var(--ink-soft);margin-top:9px;max-width:70ch}
+  .sketchstatus.err{color:var(--red)}
+
+  .banner{background:#fbeee0;border:2px dashed var(--amber);border-radius:var(--radius);padding:17px 19px;margin:18px 0 2px}
+  .banner p{font-size:14px;max-width:70ch}
+  .banner .caveat{font-size:13.5px;color:var(--ink-soft);font-style:italic;margin-top:9px}
+
+  .controls{display:flex;gap:10px;flex-wrap:wrap;margin:22px 0 6px;align-items:center}
+  .controls .lbl{font:600 13px Inter;color:var(--ink-soft)}
+  .chip{border:2px solid var(--line);background:var(--card);border-radius:999px;padding:8px 15px;font:600 13.5px Inter;color:var(--ink-soft);cursor:pointer;transition:all .15s;display:flex;gap:7px;align-items:center}
+  .chip[aria-pressed="true"]{background:var(--ink);color:#fff;border-color:var(--ink)}
+  .chip:hover{border-color:var(--amber)}
+
+  h2.section{font-family:var(--hand);font-weight:600;font-size:22px;margin:30px 0 4px}
+  .section-note{color:var(--ink-soft);font-size:14px;margin-bottom:16px}
+
+  .grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:16px}
+  .card{background:var(--card);border:2px solid var(--line);border-radius:var(--radius);padding:17px;box-shadow:var(--shadow);display:flex;flex-direction:column;gap:9px}
+  .card.anchor{border-color:var(--amber)}
+  .card.frompdf{position:relative}
+  .card.frompdf::after{content:"📄 from one messy PDF";position:absolute;top:-11px;right:12px;background:var(--sky);color:#fff;font:700 10px Inter;letter-spacing:.04em;padding:4px 9px;border-radius:6px}
+  .top{display:flex;justify-content:space-between;align-items:flex-start;gap:8px}
+  .cat{font:700 10.5px Inter;letter-spacing:.06em;text-transform:uppercase;color:var(--amber-deep);background:#fbeee0;padding:4px 9px;border-radius:6px}
+  .anchor-flag{font:700 10px Inter;letter-spacing:.05em;text-transform:uppercase;background:var(--ink);color:#fff;padding:4px 8px;border-radius:6px}
+  .card h3{font-family:var(--hand);font-weight:600;font-size:17.5px;line-height:1.25}
+  .rhythm{font-size:12.5px;color:var(--sky);font-weight:600}
+  .desc{font-size:13.5px;color:var(--ink-soft);flex-grow:1}
+  .foot{display:flex;flex-direction:column;gap:6px;border-top:1px solid var(--line);padding-top:10px;font-size:12.5px;color:var(--ink-soft)}
+  /* ring colour is positional — innermost ring is always the greenest,
+     whatever the rings mean in this place. No per-place CSS. */
+  .ringtag{display:inline-flex;gap:6px;align-items:center;font-weight:600}
+  .ringtag.r0{color:var(--good)}
+  .ringtag.r1{color:var(--warn)}
+  .ringtag.r2{color:var(--red)}
+  .src{font-size:11.5px;color:var(--ink-soft);opacity:.85}
+  .src b{color:var(--ink)}
+  /* a sketch card is deliberately the weaker object on the page: dashed,
+     flatter, no source line — because there is no source yet. */
+  .card.sketch{border-style:dashed;background:#fdfaf4;box-shadow:none}
+  .stamp{font:700 10px Inter;letter-spacing:.05em;text-transform:uppercase;color:var(--warn)}
+
+  .invisible{background:#fbeee0;border:2px dashed var(--amber);border-radius:var(--radius);padding:20px;margin-top:16px}
+  .invisible h3{font-family:var(--hand);font-size:18px;margin-bottom:8px}
+  .invisible p{font-size:14px;color:var(--ink-soft);margin-bottom:10px;max-width:66ch}
+  .invisible ul{list-style:none;display:flex;flex-direction:column;gap:8px}
+  .invisible li{font-size:14px;display:flex;gap:9px;align-items:flex-start}
+  .invisible li .q{color:var(--red);font-weight:700;flex:0 0 auto}
+
+  .count{font-size:13px;color:var(--ink-soft);margin-top:6px}
+  footer{border-top:2px solid var(--line);padding:22px 0 44px;color:var(--ink-soft);font-size:13px;margin-top:34px}
+  footer b{color:var(--ink)}
+
+  /* ===== Step Out product nav (shared contract — stream S) ===== */
+  html{scroll-padding-top:64px}
+  .sonav{position:sticky;top:0;z-index:200;display:flex;gap:14px;align-items:center;background:var(--paper);border-bottom:1px solid var(--line);padding:10px 20px;overflow-x:auto;scrollbar-width:none}
+  .sonav::-webkit-scrollbar{display:none}
+  .sonav-brand{font-family:var(--hand);font-weight:600;font-size:17px;color:var(--ink);text-decoration:none;flex:0 0 auto}
+  .sonav-links{display:flex;gap:8px;flex:0 0 auto}
+  .sonav-links a{font:600 13px Inter,system-ui,sans-serif;color:var(--ink-soft);text-decoration:none;border:2px solid var(--line);background:var(--card);border-radius:999px;padding:6px 13px;white-space:nowrap;flex:0 0 auto;transition:all .15s}
+  .sonav-links a:hover{border-color:var(--amber)}
+  .sonav-links a[aria-current="page"]{background:var(--ink);border-color:var(--ink);color:#fff}
+  .sonav-group{font:700 10px Inter,system-ui,sans-serif;letter-spacing:.12em;text-transform:uppercase;color:var(--ink-soft);flex:0 0 auto;align-self:center;margin-left:4px}
+  .sonav-group--concepts{border-left:1px solid var(--line);padding-left:14px;margin-left:10px}
+  .sonav-links a.sonav-concept{font-size:12px;padding:5px 11px;opacity:.72}
+  .sonav-links a.sonav-concept:hover,.sonav-links a.sonav-concept[aria-current="page"]{opacity:1}
+.demobar{background:var(--card);border-bottom:2px dashed var(--amber);padding:7px 14px;text-align:center;font:600 13px Inter;color:var(--ink-soft)}
+.demobar a{color:var(--amber-deep)}
+</style>
+</head>
+<body>
+<nav class="sonav" aria-label="Step Out surfaces">
+  <a class="sonav-brand" href="index.html">🚪 Step&nbsp;Out</a>
+  <div class="sonav-links">
+    <span class="sonav-group">Use it</span>
+    <a href="step-out-somers-town-test.html">Board</a>
+    <a href="step-out-journey-test.html">Journey</a>
+    <a href="step-out-snap-test.html">Snap</a>
+    <a href="step-out-places-test.html" aria-current="page">Places</a>
+    <span class="sonav-group sonav-group--concepts">Concepts</span>
+    <a class="sonav-concept" href="step-out-latent-test.html">Demand</a>
+    <a class="sonav-concept" href="step-out-organiser-test.html">Organisers</a>
+    <a class="sonav-concept" href="step-out-app-mock.html">App</a>
+  </div>
+</nav>
+<div class="wrap">
+  <header>
+    <div class="kicker">Concept test · one engine, any place · the difference is config</div>
+    <h1 id="title"></h1>
+    <p class="sub" id="strapline"></p>
+    <div class="loc" id="centerLabel"></div>
+    <p class="disclaimer" id="disclaimer">Both boards are the real data from the hand-built Somers Town board and the Foxton rural board — every entry publicly findable, source on every card, nothing invented. This page exists to prove they are one product: the same render code walks both places; only the config differs.</p>
+  </header>
+
+  <p class="glabel">Verified boards — hand-checked real data</p>
+  <div class="places" id="placeBtns"></div>
+
+  <p class="glabel">Or start anywhere else</p>
+  <div class="places">
+    <button class="pbtn sketchbtn" id="sketchBtn" aria-pressed="false">✨ Any place (live sketch)<small>unverified · straight from the model</small></button>
+  </div>
+  <form class="sketchform" id="sketchForm" hidden>
+    <input id="sketchInput" type="text" autocomplete="off" maxlength="80"
+           placeholder="a town, village or neighbourhood — anywhere in the UK"
+           aria-label="A town, village or neighbourhood — anywhere in the UK">
+    <button type="submit" id="sketchGo">Sketch it</button>
+  </form>
+  <p class="sketchstatus" id="sketchStatus" hidden></p>
+
+  <div class="controls" id="controls"></div>
+  <p class="count" id="count"></p>
+
+  <section class="banner" id="banner" hidden>
+    <p><b>This is how a new place starts: a sketch a local would then verify.</b> The stamps are the point — 86% of listed opportunities change within a year.</p>
+    <p class="caveat" id="bannerCaveat"></p>
+  </section>
+
+  <h2 class="section" id="secH">✅ What Step Out can see (public sources)</h2>
+  <p class="section-note" id="secNote">Aggregated and normalised from the open web — the layer the app can see automatically.</p>
+  <div class="grid" id="grid"></div>
+
+  <section id="invisibleWrap" hidden>
+    <h2 class="section">🕳️ What it can't see — and neither can a newcomer</h2>
+    <p class="section-note">This is the actual problem, live. These exist, but they're locked in closed channels or personal contacts.</p>
+    <div class="invisible">
+      <h3>The invisible layer</h3>
+      <p>None of this shows up in any search. A newcomer only finds it by already knowing someone — which is exactly the gap Step Out is built to close, by letting residents add what the web can't reach.</p>
+      <ul id="invisibleList"></ul>
+    </div>
+  </section>
+
+  <footer>
+    <b>Step Out</b> — generalization prototype. Two hand-built boards, one render function: the dense↔rural difference is a config value, not a codebase.
+  </footer>
+</div>
+
+<script>
+/* =====================================================================
+   PLACE_CONFIG — the deliverable of this page.
+
+   Somers Town (dense London) and Foxton (rural Leicestershire)
+   exist today as two separately hand-built boards. This page renders
+   both from ONE engine: the dense↔rural difference is a config value,
+   not a codebase.
+
+   Schema, per place:
+     id            string — config key, used by the switcher
+     name          string — place name (title + switcher button)
+     strapline     string — the one-paragraph pitch under the title
+     mode          "tiers" | "reach" — the lens this place needs.
+                   "tiers": rings mean how-local-is-local (zoom circles)
+                   "reach": rings mean how-can-I-get-there, and entries
+                            flagged invisible:true get the "exists but
+                            has no web presence" treatment
+     rings         [{key,label,emoji,desc}] — ordered innermost→outermost.
+                   Rings are CUMULATIVE: picking one shows everything up
+                   to and including it ("local" includes "hyper",
+                   "cycle" includes "walk"). Chip text = emoji+label,
+                   card footer tag = emoji+desc, colour = ring position.
+     center_label  string — the 📍 pill under the strapline
+     data          [entries] — copied verbatim from the two hand-built
+                   test pages (their tier/reach field renamed to ring);
+                   every src kept, nothing invented.
+
+   Anchors (recurring, role-giving, low-pressure) work IDENTICALLY in
+   both modes — that is the point: what makes somewhere easy to join
+   doesn't depend on geography, so it lives on the entry, not the mode.
+
+   No matcher on this page (no API calls, no key). Note, though, that
+   the matcher prompt is already place-agnostic — it reads the data
+   array plus the ring legend — so per-place matching is config-fed in
+   exactly the same way.
+   ===================================================================== */
+const PLACE_CONFIG={
+  somers:{
+    id:"somers",
+    name:"Somers Town",
+    strapline:"Somers Town, NW1 — the village inside London. Everything below is within walking distance of Phoenix Court, aggregated from public sources. In a city the question isn't \"can I get there?\" — it's \"how local do I want local to be?\"",
+    mode:"tiers",
+    rings:[
+      {key:"hyper",label:"Hyper-local (Somers Town)",emoji:"🏘️",desc:"Hyper-local — Somers Town, minutes on foot"},
+      {key:"local",label:"Local (King's Cross / Euston)",emoji:"🚶",desc:"Local — King's Cross / Euston walk"},
+      {key:"camden",label:"Wider Camden",emoji:"🗺️",desc:"Wider Camden — borough-wide"}
+    ],
+    center_label:"📍 Phoenix Court, 2 Brill Pl, NW1 · everything walkable · zoom chooses the circle",
+    data:[
+      {cat:"Social",t:"Women's Coffee Mornings",rhythm:"Mondays 10.30am–12pm, STCA Café, 150 Ossulston St",desc:"Tea, coffee, biscuits and conversation about health, nutrition and relationships. A three-minute walk from this building — and one of the easiest front doors in NW1.",ring:"hyper",anchor:true,pdf:true,src:"Living Centre newsletter (PDF)"},
+      {cat:"Craft",t:"Sewing Socials",rhythm:"Mondays 1–3pm & Saturdays 11am–2pm, STCA Café",desc:"Upcycling and mending to cut textile waste; machines provided for your own projects. Recurring, hands-on, low-verbal — a textbook anchor.",ring:"hyper",anchor:true,pdf:true,src:"Living Centre newsletter (PDF)"},
+      {cat:"Outdoors / growing",t:"Grow-it-Yourself",rhythm:"Tuesdays 10.30am–12.30pm, rooftop garden, Ossulston St",desc:"Learn what you can grow at home, composting, or just sit by the rooftop garden. Gentle, weekly, no experience needed.",ring:"hyper",anchor:true,pdf:true,src:"Living Centre newsletter (PDF)"},
+      {cat:"Health / wellbeing",t:"Wellbeing Wednesdays",rhythm:"Wednesdays 12–3pm, STCA Café",desc:"Gentle fitness, health advice and mindfulness — with a free warm vegetarian meal. Free food plus a weekly rhythm: the low-cost anchor pattern.",ring:"hyper",anchor:true,pdf:true,src:"Living Centre newsletter (PDF)"},
+      {cat:"Social",t:"Community Café / Climate Café",rhythm:"Every other Wednesday 11am–2pm, 150 Ossulston St",desc:"Conversations and connections over free cake, with guest speakers on health and the planet.",ring:"hyper",anchor:false,pdf:true,src:"Living Centre newsletter (PDF)"},
+      {cat:"Skills",t:"DIY Climate Learning Hub",rhythm:"Thursdays 10am–1pm, STCA",desc:"Make natural home and lifestyle products for personal use. Weekly, practical, come-as-you-can.",ring:"hyper",anchor:false,pdf:true,src:"Living Centre newsletter (PDF)"},
+      {cat:"Give back",t:"Healthwatch Camden volunteering",rhythm:"Ongoing, borough-wide · 16+ · travel reimbursed",desc:"Trained 'enter and view' visitors to local health services, or general project volunteers (e.g. blood-pressure checks in libraries). The give-back anchor — with real reciprocity built in.",ring:"camden",anchor:true,pdf:true,src:"Living Centre newsletter (PDF)"},
+      {cat:"Market",t:"Chalton Street Market",rhythm:"Fridays ~10am–4pm, Chalton Street",desc:"A street market on this site since 1795 — 230 years of weekly rhythm, five minutes' walk from this room. Community-run fruit & veg stall included.",ring:"hyper",anchor:true,pdf:false,src:"Camden Council / Wikipedia"},
+      {cat:"Youth",t:"Somers Town Youth Centre",rhythm:"Youth club Mon–Fri 5.30–8.30pm, 134 Chalton St",desc:"One of Camden's three Youth Hubs: drop in, no appointment — boxing, gym, football, creative workshops, DofE, volunteering. Ages 12–19 (to 25 with SEND).",ring:"hyper",anchor:true,pdf:false,src:"Camden Rise (council)"},
+      {cat:"Learning",t:"Community archiving course — 'The stories we tell'",rhythm:"8 weeks, British Library, 96 Euston Rd",desc:"Free short course building a personal or community archive with British Library professionals. A role-giving on-ramp into a world-class institution next door.",ring:"local",anchor:false,pdf:true,src:"Living Centre newsletter (PDF) / British Library"},
+      {cat:"Civic",t:"Somers Town Neighbourhood Forum",rhythm:"Open meetings monthly, the Living Centre, 2 Ossulston St",desc:"Resident-led forum shaping the neighbourhood plan, with heritage, climate and employment sub-groups. Give-back with a seat at the table.",ring:"hyper",anchor:true,pdf:false,src:"somerstownplan.info"},
+      {cat:"Festival (one-off)",t:"Somers Town Festival",rhythm:"Annual, July, Chalton Street",desc:"Camden's largest street festival — music, food, art, dance. Organisers openly ask for volunteers, stallholders and performers: 'This is your festival.'",ring:"hyper",anchor:false,pdf:false,src:"somerstownfestival.co.uk"},
+      {cat:"Music",t:"Groove Chorus",rhythm:"Wednesdays 6.45–8.45pm, the Living Centre, 2 Ossulston St",desc:"A community choir you can simply turn up and sing with — no auditions, no experience, the same friendly room every week.",ring:"hyper",type:"activity",anchor:true,pdf:true,src:"Somers Town Community Newsletter, June–July 2026, p.3 (Living Centre Weekly)"},
+      {cat:"Fitness",t:"Zumba Classes",rhythm:"Mondays 12.30–1.30pm, STCA, 150 Ossulston St",desc:"A lunchtime dance workout where nobody minds a missed step — you can follow along without saying a word, which makes the first visit easy.",ring:"hyper",type:"activity",anchor:true,pdf:true,src:"Somers Town Community Newsletter, June–July 2026, p.2 (STCA Weekly)"},
+      {cat:"Fitness",t:"Body Conditioning Fitness Session",rhythm:"Thursdays 1–2pm, STCA, 150 Ossulston St",desc:"A gentle weekly strength-and-stretch hour — low-cost, low-pressure, and you don't need kit or a gym habit to walk in.",ring:"hyper",type:"activity",anchor:true,pdf:true,src:"Somers Town Community Newsletter, June–July 2026, p.2 (STCA Weekly)"},
+      {cat:"Food",t:"Urban Community Project Cooking Classes",rhythm:"Mondays 12–2pm, the Living Centre, 2 Ossulston St",desc:"Cook — and eat — together at a weekly hands-on class; practical, sociable and beginner-friendly.",ring:"hyper",type:"activity",anchor:true,pdf:true,src:"Somers Town Community Newsletter, June–July 2026, p.3 (Living Centre Weekly)"},
+      {cat:"Social",t:"Gingerbread Single-Parent Meet-ups",rhythm:"Saturdays 3–5pm, STCA, 150 Ossulston St",desc:"Weekend meet-ups for single parents, with a clothes swap folded in — kids welcome, no sign-up, ask for the organising collective at the café.",ring:"hyper",type:"activity",anchor:true,pdf:true,src:"Somers Town Community Newsletter, June–July 2026, p.2 (STCA Weekly)"},
+      {cat:"Youth",t:"Scouts at STCA",rhythm:"Thursdays 6.30–8pm, STCA, 150 Ossulston St",desc:"A weekly Scouts group minutes from this room — badges, structure and a role to grow into for kids who want a regular thing.",ring:"hyper",type:"activity",anchor:true,pdf:true,src:"Somers Town Community Newsletter, June–July 2026, p.2 (STCA Weekly)"},
+      {cat:"Youth",t:"Creative Arts Weeks",rhythm:"27–31 July (ages 7–9) & 3–7 August (ages 10–12), Mon–Fri 10am–3.30pm, corner of Chalton St & Polygon Rd",desc:"A free week of acting, singing, dance, art and music for Somers Town children, lunch and snacks provided — running right now, a few minutes' walk from this building.",ring:"hyper",type:"activity",anchor:false,pdf:true,src:"Somers Town Community Newsletter, June–July 2026, p.4 (Scene & Heard / Melting Metropolis)"},
+      {cat:"Give back",t:"Living Centre Volunteering",rhythm:"Ongoing — drop in any weekday and ask for the Job Hub team",desc:"Both community centres list volunteering openings every single day of the week; a role and a reason to keep coming back, arranged through the Job Hub team.",ring:"hyper",type:"volunteering",anchor:true,pdf:true,src:"Somers Town Community Newsletter, June–July 2026, pp.2–3 (both weekly timetables)"},
+      {cat:"Give back",t:"Youth Work Experience Pilot",rhythm:"Summer holidays, office-based placements at STCA · ages 16–17",desc:"A new pilot giving two young people paid-in-experience office placements — reception, admin, finance tasks — with a Job Hub adviser coaching them for the world of work.",ring:"hyper",type:"volunteering",anchor:false,pdf:true,src:"Somers Town Job Hub Newsletter, July–September 2026, p.2"},
+      {cat:"Work & skills",t:"Somers Town Job Hub",rhythm:"Mon–Fri 9am–5pm by appointment (Saturdays on request), the Living Centre, 2 Ossulston St",desc:"Free one-to-one help from a dedicated employment adviser — CVs, interviews, benefits advice, training routes (Security, Construction, IT), even interview clothing.",ring:"hyper",type:"course",anchor:false,pdf:true,src:"Somers Town Job Hub Newsletter, July–September 2026, p.1"},
+      {cat:"Work & skills",t:"Free Food Hygiene Qualification (Level 2)",rhythm:"Continuous enrolment via the Job Hub",desc:"A free Level 2 certificate that opens doors to catering, hospitality, nursery and school-kitchen work — a concrete first rung if you want to earn.",ring:"hyper",type:"course",anchor:false,pdf:true,src:"Somers Town Job Hub Newsletter, July–September 2026, p.2"},
+      {cat:"Food",t:"Spicy Laass at the STCA Café",rhythm:"Tuesdays 11am–5pm, Thursdays & Fridays 10am–5pm, STCA Café, 150 Ossulston St",desc:"A community food business serving home-style cooking at the café three days a week — affordable food and a warm room, no reason needed to be there.",ring:"hyper",type:"stall",anchor:false,pdf:true,src:"Somers Town Community Newsletter, June–July 2026, p.2 (STCA Weekly)"},
+      {cat:"Civic",t:"Community Centre Wishlist",rhythm:"Open call while upgrades are planned, the Living Centre",desc:"The centre is collecting residents' ideas for the spaces and improvements they'd love to see — tell the Living Centre team what's missing from the neighbourhood.",ring:"hyper",type:"request",anchor:false,pdf:true,src:"Somers Town Community Newsletter, June–July 2026, p.4"},
+      {cat:"Funding",t:"We Make Camden Kit — up to £2,000 to start something",rhythm:"Open all year, rolling — decisions by a panel of Camden residents; monthly drop-in help sessions",desc:"Camden Giving gives up to £2,000 (up to £5,000 for returning groups) to residents, small groups and schools with an idea for their neighbourhood — you don't need to be a charity, and the short form comes with walkthrough videos and real human help.",ring:"camden",type:"grant",anchor:false,src:"camdengiving.org.uk/we-make-camden-kit"},
+      {cat:"Funding",t:"National Lottery Awards for All (£300–£20,000)",rhythm:"Rolling — apply any time, decision in about 16 weeks",desc:"The friendliest of the big funders: £300–£20,000 for community projects run by constituted groups, designed as a first grant — no match funding, projects up to two years.",ring:"camden",type:"grant",anchor:false,src:"tnlcommunityfund.org.uk — Awards for All England"},
+      {cat:"Funding",t:"Local CIL — Camden's neighbourhood improvement pot",rhythm:"Ongoing — pitch to your ward councillors, who sponsor proposals against a ward priority list",desc:"A quarter of what developers pay Camden is spent on ward-level projects (£4.5m currently available borough-wide); it funds physical improvements like play spaces and community-room kit, and needs a ward councillor to sponsor your proposal — more legwork than a form, but real money for this ward.",ring:"local",type:"grant",anchor:false,src:"camden.gov.uk/community-infrastructure-levy"}
+    ]
+  },
+  foxton:{
+    id:"foxton",
+    name:"Foxton",
+    strapline:"Foxton, south Leicestershire — a canal-side village: hilltop medieval church, two pubs, a village hall with free tennis courts, and the ten-lock staircase of Foxton Locks a towpath walk away. Market Harborough is three miles down the road.",
+    mode:"reach",
+    rings:[
+      {key:"walk",label:"Walk",emoji:"🚶",desc:"Walkable in the village"},
+      {key:"cycle",label:"Cycle / towpath",emoji:"🚲",desc:"Cycle or towpath — the locks and Market Harborough"},
+      {key:"hard",label:"Car or bus",emoji:"🚗",desc:"Hard without a car or a lift"}
+    ],
+    center_label:"📍 Foxton, LE16 · no car · bike + the towpath",
+    data:[
+      {cat:"Music",t:"Foxton Community Choir",rhythm:"Wednesday evenings, 7.30–9pm (as last publicly listed — confirm locally)",desc:"A friendly village choir that rehearses in St Andrew's church on Wednesday nights and has openly appealed for new members — no audition culture, and they sing a Christmas concert for the village.",ring:"walk",anchor:true,src:"Kibworth & District Chronicle / Harborough Mail"},
+      {cat:"Sport",t:"Foxton Tennis Club — free village courts",rhythm:"Three hours weekly, usually Wednesdays",desc:"The courts in the village hall grounds are free to use for all Foxton residents, with the club open for a weekly session — just contact the club to get playing.",ring:"walk",anchor:true,src:"foxtonvillagehall.org.uk"},
+      {cat:"Club",t:"Foxton Snooker & Billiards Club",rhythm:"Members' room open 365 days a year",desc:"A purpose-built snooker room inside the village hall, run by villagers since the hall opened — membership is £35 a year for Foxton, Gumley and Gartree residents.",ring:"walk",anchor:true,src:"foxtonvillagehall.org.uk"},
+      {cat:"Church",t:"Sunday services at St Andrew's",rhythm:"1st Sunday 10.30am (all-age) and 3rd Sunday 10.30am (Holy Communion)",desc:"The hilltop medieval church holds a service for all ages on the first Sunday and communion on the third, with coffee and biscuits served afterwards.",ring:"walk",anchor:true,src:"A Church Near You — Foxton: St Andrew"},
+      {cat:"Gardening",t:"Foxton Gardens Society",rhythm:"regular — check locally",desc:"One of the village's listed societies in the parish council's community directory, part of a village calendar that includes an annual produce show.",ring:"walk",anchor:false,src:"Foxton Parish Council directory (foxton-pc.gov.uk)"},
+      {cat:"Sport",t:"Foxton Short Mat Bowls & New Age Kurling",rhythm:"regular — check locally",desc:"A village short mat bowls and kurling group listed in the parish council's community directory — gentle, indoor, all-ages games that suit complete beginners.",ring:"walk",anchor:true,src:"Foxton Parish Council directory (foxton-pc.gov.uk)"},
+      {cat:"Funding",t:"Robert Monk's Foxton Charity — individual grants",rhythm:"2026–27 application round open",desc:"Grants of £30–£1,000 for individuals living in Foxton, Foxton Locks or Gartree facing hardship — and for education and training too.",ring:"walk",anchor:false,src:"foxtonvillagehall.org.uk (Robert Monk's Foxton Charity)"},
+      {cat:"Give back",t:"Volunteer Lock-Keeper at Foxton Locks",rhythm:"About a day a week, April–October season",desc:"Join the 100-plus volunteers who welcome visitors and help boaters through the UK's longest staircase lock flight — enthusiasm matters more than experience.",ring:"cycle",anchor:true,src:"Canal & River Trust — Foxton Locks"},
+      {cat:"Give back",t:"Volunteer tour guide, Foxton Canal Museum",rhythm:"Museum open Fri–Sun 10am–4pm in season",desc:"The independent museum in the old boiler house of the Victorian boat lift is actively seeking volunteer tour guides, with training provided.",ring:"cycle",anchor:true,src:"Foxton Inclined Plane Trust (fipt.org.uk)"},
+      {cat:"Fitness",t:"Market Harborough parkrun",rhythm:"Every Saturday, 9am, Welland Park",desc:"A free weekly 5k where you can walk, jog, run, volunteer or just spectate — register once online.",ring:"cycle",anchor:true,src:"parkrun.org.uk — Market Harborough"},
+      {cat:"Funding",t:"Harborough District Community Grant Fund",rhythm:"Rounds advertised by the district council — check current key dates",desc:"A capital grant fund for constituted community groups across the district; village applications need the parish council's backing.",ring:"hard",anchor:false,src:"Harborough District Council (harborough.gov.uk)"},
+      {t:"Most club joining happens through <b>a secretary's personal phone or email</b> in the parish directory — not a public sign-up page.",invisible:true},
+      {t:"Village news travels by the printed <b>Folio newsletter</b>, noticeboard posters and local Facebook groups before any of it reaches a website.",invisible:true},
+      {t:"Hall and pitch bookings go through <b>a booking secretary</b> — availability is something you ask about, not something you browse.",invisible:true}
+    ]
+  }
+};
+
+/* Everything mode-specific is a lookup, not a branch — same discipline
+   as PLACE_CONFIG itself. */
+const MODE_COPY={
+  tiers:{tag:"dense · zoom chooses the circle",filterLabel:"How local is local?",countSuffix:""},
+  reach:{tag:"rural · reachability + the invisible layer",filterLabel:"I can get there by:",countSuffix:" · plus an invisible layer no search can reach"},
+  sketch:{tag:"live sketch · unverified",filterLabel:"How far is that?",countSuffix:" · none of it verified yet"}
+};
+
+/* Section copy is a lookup too — a sketch is not "what Step Out can see",
+   it's what the model believes before anyone has checked. */
+const SECTION_COPY={
+  board:{h:"✅ What Step Out can see (public sources)",
+         note:"Aggregated and normalised from the open web — the layer the app can see automatically."},
+  sketch:{h:"✨ A first sketch — nobody has checked this yet",
+          note:"Not aggregated from sources: this is what Claude believes exists from public knowledge. It is the cold start, not the product — a local corrects it, and the verified board grows out of it."}
+};
+
+/* ============================== the engine ==============================
+   ONE render path for every place. The only place-specific thing below
+   is `PLACE_CONFIG[placeId]` — zero per-place branches anywhere else. */
+const SKETCH_ID="sketch";
+let placeId="somers", filter="all";
+/* The live sketch is a config that doesn't exist until someone asks for it.
+   Held apart from PLACE_CONFIG so the canned boards stay exactly as shipped. */
+let sketchCfg=null;
+const $=id=>document.getElementById(id);
+const cfgFor=id=>id===SKETCH_ID?sketchCfg:PLACE_CONFIG[id];
+
+const boardEntries=cfg=>cfg.data.filter(e=>!e.invisible);
+const ringIdx=(cfg,key)=>cfg.rings.findIndex(r=>r.key===key);
+
+function renderPlace(){
+  const cfg=cfgFor(placeId);
+  if(!cfg){placeId="somers";return renderPlace();}   // sketch selected before one exists
+  const isSketch=cfg.sketch===true;
+
+  // switcher — one button per config entry (the sketch button lives in the markup)
+  const pb=$('placeBtns');pb.innerHTML='';
+  Object.values(PLACE_CONFIG).forEach(p=>{
+    const b=document.createElement('button');
+    b.className='pbtn';
+    b.setAttribute('aria-pressed',String(p.id===placeId));
+    b.innerHTML=`${p.name}<small>${MODE_COPY[p.mode].tag}</small>`;
+    b.addEventListener('click',()=>{placeId=p.id;filter="all";renderPlace();});
+    pb.appendChild(b);
+  });
+  $('sketchBtn').setAttribute('aria-pressed',String(isSketch));
+
+  // header — all text from config
+  $('title').textContent=isSketch?`What Claude thinks it knows about ${cfg.name}`:`What Step Out shows in ${cfg.name}`;
+  $('strapline').textContent=cfg.strapline;
+  $('centerLabel').textContent=cfg.center_label;
+  $('disclaimer').hidden=isSketch;
+
+  // honesty furniture — banner + section copy follow the config, not a branch tree
+  const sc=SECTION_COPY[isSketch?"sketch":"board"];
+  $('secH').textContent=sc.h;
+  $('secNote').textContent=sc.note;
+  $('banner').hidden=!isSketch;
+  $('bannerCaveat').textContent=isSketch?cfg.caveat:"";
+
+  // filter chips — Everything + one per ring + anchors, straight from config
+  const ctl=$('controls');ctl.innerHTML='';
+  const lbl=document.createElement('span');
+  lbl.className='lbl';lbl.textContent=MODE_COPY[cfg.mode].filterLabel;
+  ctl.appendChild(lbl);
+  const chips=[{key:"all",text:"Everything"},
+    ...cfg.rings.map(r=>({key:r.key,text:`${r.emoji} ${r.label}`})),
+    {key:"anchor",text:"⚓ Anchors only"}];
+  chips.forEach(ch=>{
+    const b=document.createElement('button');
+    b.className='chip';b.textContent=ch.text;
+    b.setAttribute('aria-pressed',String(filter===ch.key));
+    b.addEventListener('click',()=>{filter=ch.key;renderPlace();});
+    ctl.appendChild(b);
+  });
+
+  // invisible layer — mode "reach" renders entries flagged invisible:true
+  const inv=cfg.data.filter(e=>e.invisible);
+  $('invisibleWrap').hidden=!(cfg.mode==="reach"&&inv.length);
+  $('invisibleList').innerHTML=inv.map(e=>`<li><span class="q">?</span><span>${e.t}</span></li>`).join('');
+
+  renderBoard(cfg);
+}
+
+function renderBoard(cfg){
+  const all=boardEntries(cfg);
+  const items=all.filter(it=>{
+    if(filter==="all")return true;
+    if(filter==="anchor")return it.anchor; // anchors work identically in both modes — that's the point
+    return ringIdx(cfg,it.ring)<=ringIdx(cfg,filter); // rings are cumulative
+  });
+  const grid=$('grid');grid.innerHTML='';
+  items.forEach(it=>{
+    const ri=ringIdx(cfg,it.ring),r=cfg.rings[ri];
+    const c=document.createElement('article');
+    c.className='card'+(it.anchor?' anchor':'')+(it.pdf?' frompdf':'')+(cfg.sketch?' sketch':'');
+    /* A sketch card has no source line, because there is no source. The stamp
+       is what stands in its place — and that swap IS the honesty. */
+    const provenance=cfg.sketch
+      ?'<span class="stamp">SKETCH — unverified, from public knowledge</span>'
+      :`<span class="src">source: <b>${it.src}</b></span>`;
+    c.innerHTML=`<div class="top"><span class="cat">${it.cat}</span>${it.anchor?'<span class="anchor-flag">⚓ Anchor</span>':''}</div>
+      <h3>${it.t}</h3>
+      <p class="rhythm">↻ ${it.rhythm}</p>
+      <p class="desc">${it.desc}</p>
+      <div class="foot"><span class="ringtag r${ri}">${r.emoji} ${r.desc}</span>${provenance}</div>`;
+    grid.appendChild(c);
+  });
+  const r0=cfg.rings[0];
+  const inner=all.filter(i=>i.ring===r0.key).length;
+  const anchors=all.filter(i=>i.anchor).length;
+  $('count').textContent=`${items.length} shown · ${all.length} found in total · ${inner} ${r0.emoji} ${r0.label} · ${anchors} anchors${MODE_COPY[cfg.mode].countSuffix}`;
+}
+
+/* ==================== the live sketch (✨ any place) ====================
+   The founder's note: "the location can't change — let's have a canned
+   section and then live, to see what it can pull in." The two boards above
+   are the canned, hand-verified section. This is the third path: name any
+   UK place, ONE model call, and the answer is rendered through the SAME
+   engine — but every card stamped unverified.
+
+   That is not a disclaimer bolted on; it is the product's cold-start story.
+   A new place begins as a sketch; freshness stamps and local verification
+   are what turn a sketch into a board. Showing the weak version honestly
+   is more convincing than pretending the model knows the village.
+
+   Shape returned by the model (own page, own schema):
+     {place_kind:"dense"|"rural"|"mixed", strapline,
+      entries:[{cat,t,rhythm,desc,ring:"near"|"middle"|"wide",type,anchor}],
+      caveat}
+   No src field anywhere — there is no source, and inventing one would be
+   the exact dishonesty this page exists to avoid.
+   ======================================================================= */
+
+const MODEL="claude-opus-5";
+const TYPES=["activity","volunteering","course","stall","space","grant","request"];
+const SKETCH_RINGS_KEYS=["near","middle","wide"];
+
+/* place_kind picks the ring LABELS — same three keys, different meaning:
+   in a city the rings are walking circles, in a village they're "can I
+   actually get there". Exactly the tiers↔reach split the canned boards
+   demonstrate, chosen by the model instead of by hand. */
+const SKETCH_RINGS={
+  dense:[
+    {key:"near",label:"Right here",emoji:"🏘️",desc:"Right here — minutes on foot"},
+    {key:"middle",label:"A short walk",emoji:"🚶",desc:"A short walk away"},
+    {key:"wide",label:"Wider area",emoji:"🗺️",desc:"Wider area — across the borough"}
+  ],
+  rural:[
+    {key:"near",label:"Walk",emoji:"🚶",desc:"In the village, on foot"},
+    {key:"middle",label:"Cycle or a short hop",emoji:"🚲",desc:"Cycle or a short hop to the nearest town"},
+    {key:"wide",label:"Car, bus or taxi",emoji:"🚗",desc:"Hard without a car, bus or a lift"}
+  ],
+  mixed:[
+    {key:"near",label:"In town, on foot",emoji:"🚶",desc:"In the town, on foot"},
+    {key:"middle",label:"Edge of town",emoji:"🚲",desc:"Edge of town — a long walk or a cycle"},
+    {key:"wide",label:"Villages around",emoji:"🚗",desc:"Villages around — car, bus or a lift"}
+  ]
+};
+
+const SKETCH_SCHEMA={
+  type:"object",
+  properties:{
+    place_kind:{type:"string",enum:["dense","rural","mixed"]},
+    strapline:{type:"string"},
+    entries:{type:"array",items:{type:"object",
+      properties:{
+        cat:{type:"string"},
+        t:{type:"string"},
+        rhythm:{type:"string"},
+        desc:{type:"string"},
+        ring:{type:"string",enum:SKETCH_RINGS_KEYS},
+        type:{type:"string",enum:TYPES},
+        anchor:{type:"boolean"}
+      },
+      required:["cat","t","rhythm","desc","ring","type","anchor"],
+      additionalProperties:false}},
+    caveat:{type:"string"}
+  },
+  required:["place_kind","strapline","entries","caveat"],additionalProperties:false
+};
+
+function buildSketchPrompt(place){
+  return `You are the cold-start engine for "Step Out", an app that surfaces local community opportunity and matches people to it. Today is 30 July 2026.
+
+Someone has typed a UK place name: "${place}". Sketch what community opportunity you genuinely believe exists there, from public knowledge. This sketch will be shown to the user clearly labelled as unverified, so honesty matters far more than richness.
+
+Rules:
+- Only include things you genuinely believe exist. If you are not confident a specific named group exists, describe the kind of thing that is reliably there instead (the village hall's programme, the library, the parkrun, the district council's volunteering routes, the parish or church noticeboard) — an honest general entry beats an invented specific one.
+- NEVER invent street addresses, times, dates, prices, websites or contact details. Put your best honest guess at the pattern in "rhythm" and tell the reader to confirm it — e.g. "weekly, likely an evening — check locally", "monthly, term-time — check locally".
+- Never include a person's name, phone number or email. Roles only ("hall bookings volunteer").
+- place_kind: "dense" for a city neighbourhood or suburb, "rural" for a village, hamlet or very small settlement, "mixed" for a market town or small town with villages around it.
+- ring: "near" = in the place itself; "middle" = a walk or short cycle away; "wide" = needs a car, bus or a lift. In a dense place these are walking circles; in a rural one they are how you actually get there.
+- type: one of ${TYPES.join(" / ")}. Spread across several types — not just activities. Volunteering, courses, markets/stalls, bookable spaces and grants are all local opportunity.
+- anchor: true only for recurring, role-giving, low-pressure things a newcomer could simply keep turning up to.
+- Give 6 to 10 entries. Fewer is fine and better for a tiny place — do not pad.
+- strapline: one or two warm sentences about what this place is like for someone new, in the second person where it helps.
+- caveat: ONE honest sentence about how confident you actually are for a place this size — say plainly if it is small enough that most of what happens there is not on the public web at all.
+- Respond in English.`;
+}
+
+/* Key is NEVER a literal in this file (the repo is pushed). Same cached
+   so_key as the other pages — one paste per origin serves them all. */
+const getKey=()=>{
+  // NEVER prompts. Live-without-proxy is a developer path: pre-store a key in
+  // localStorage ("so_key") from the console. Absent key -> the caller's
+  // friendly canned/fallback path. Visitors are never asked for anything.
+  const k=localStorage.getItem("so_key");
+  return (k&&k!=="null"&&k!=="")?k:null;
+};
+
+const QS=new URLSearchParams(location.search);
+// Hosted builds (GitHub Pages etc.) default to mock so visitors never hit a key
+// prompt; localhost and file:// keep the live default. ?mock=0 forces live.
+const HOSTED=location.protocol!=="file:"&&!["localhost","127.0.0.1"].includes(location.hostname);
+// Optional rate-limited proxy (see worker/ in the private repo): set to its URL in the
+// published copy and live calls route there with no key prompt. "" = direct call with your key.
+const PROXY="";
+const MOCK=QS.has("mock")?QS.get("mock")==="1":!PROXY;
+if(HOSTED&&!QS.has("mock")){
+  const demoEl=document.createElement("div");demoEl.className="demobar";
+  demoEl.innerHTML='archive demo \u2014 canned replays of the day\u2019s real model runs \u00b7 <a href="../board.html">live search is on the live site \u2192</a>';
+  const demoMount=()=>document.body.prepend(demoEl);
+  document.body?demoMount():document.addEventListener("DOMContentLoaded",demoMount);
+}
+
+
+/* ?mock=1 — a canned Market Harborough sketch so the whole flow demos from
+   disk with no key and no network. Written the way the model is instructed
+   to write: real institutions, no invented times, "check locally" rhythms. */
+const MOCK_SKETCH={
+  place_kind:"mixed",
+  strapline:"Market Harborough is a Leicestershire market town with a compact centre, a canal basin and a ring of villages around it. Enough happens in town to fill a week — but most of it reaches you through a noticeboard, not a search box.",
+  entries:[
+    {cat:"Market",t:"Market Harborough town market",rhythm:"Regular market days in the town square — check locally for which days",desc:"The town's oldest rhythm and the easiest place to simply be among people without joining anything. Stalls and days change with the season, so check before you set out.",ring:"near",type:"stall",anchor:true},
+    {cat:"Library",t:"Market Harborough Library",rhythm:"Open most days; groups and children's sessions run to a termly timetable — check locally",desc:"Leicestershire libraries host reading groups, digital-help drop-ins and children's sessions. Free, warm, and nobody asks why you're there.",ring:"near",type:"space",anchor:true},
+    {cat:"Outdoors",t:"Welland Park and the Grand Union Canal towpath",rhythm:"Open daily; parkrun-style and volunteer conservation groups tend to run weekend mornings — check locally",desc:"The park and the canal basin are where the town walks. Good first territory if turning up to a group feels like too much yet.",ring:"near",type:"activity",anchor:false},
+    {cat:"Museum / heritage",t:"Harborough Museum and local history groups",rhythm:"Museum open regular hours; history society meets monthly, likely evenings — check locally",desc:"A small local museum with volunteer involvement and a local-history circle around it — a gentle way in if you'd rather learn about the place than perform in it.",ring:"near",type:"activity",anchor:false},
+    {cat:"Music / drama",t:"Amateur theatre and choral groups in the town",rhythm:"Weekly rehearsals in term time, likely evenings — check locally",desc:"A town this size reliably supports a theatre group and at least one choir. Rehearsal-based, role-giving and forgiving of beginners: the classic anchor.",ring:"near",type:"activity",anchor:true},
+    {cat:"Give back",t:"Harborough District volunteering",rhythm:"Ongoing — the district council and local voluntary-action service list roles year-round",desc:"District-wide volunteering routes, from community transport to befriending. Most give you a role and a reason to come back weekly.",ring:"middle",type:"volunteering",anchor:true},
+    {cat:"Learning",t:"Adult learning and skills courses",rhythm:"Termly enrolment — check locally for what's running",desc:"Leicestershire adult-learning provision runs short courses in and around the town, some free depending on circumstances. A practical route if you want to earn as well as belong.",ring:"middle",type:"course",anchor:false},
+    {cat:"Village halls",t:"Village hall programmes in the surrounding villages",rhythm:"Weekly and monthly clubs — each hall keeps its own noticeboard, check locally",desc:"The villages around each run their own halls with WI, history and craft groups. Reachable by bike or a lift; often invisible online.",ring:"wide",type:"activity",anchor:true},
+    {cat:"Funding",t:"Parish and district community grants",rhythm:"Rolling or annual rounds — check with the parish council",desc:"Small pots exist at parish and district level for residents who want to start something. Amounts and deadlines vary; the parish clerk is the honest first ask.",ring:"wide",type:"grant",anchor:false}
+  ],
+  caveat:"For a town this size I'm fairly confident about the institutions — the market, library, park, museum, council volunteering — but much less so about which specific clubs are still running and when, and the smaller village groups are almost entirely absent from the public web."
+};
+
+const delay=ms=>new Promise(r=>setTimeout(r,ms));
+
+/* Model output is untrusted text going into innerHTML — escape at the
+   boundary, once, as it becomes config. Canned config is trusted and keeps
+   its intentional markup (the invisible layer uses <b>). */
+const esc=s=>String(s).replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+
+function cleanSketchEntries(raw){
+  if(!Array.isArray(raw))return[];
+  const s=v=>esc(typeof v==="string"?v.trim():"");
+  return raw.filter(e=>e&&typeof e.t==="string"&&e.t.trim()).slice(0,12).map(e=>({
+    cat:s(e.cat)||"Community",
+    t:s(e.t),
+    rhythm:s(e.rhythm)||"check locally",
+    desc:s(e.desc),
+    ring:SKETCH_RINGS_KEYS.includes(e.ring)?e.ring:"middle",
+    type:TYPES.includes(e.type)?e.type:"activity",
+    anchor:e.anchor===true
+    // no src, deliberately
+  }));
+}
+
+/* The response becomes a PLACE_CONFIG-shaped object — that's the whole
+   trick: the engine cannot tell a sketch from a verified board, only the
+   stamps can. */
+function sketchToConfig(place,raw){
+  const kind=SKETCH_RINGS[raw.place_kind]?raw.place_kind:"mixed";
+  return {
+    id:SKETCH_ID,
+    name:place,                                    // textContent only — no escaping needed
+    sketch:true,
+    mode:"sketch",
+    strapline:typeof raw.strapline==="string"?raw.strapline:"",
+    rings:SKETCH_RINGS[kind],
+    center_label:`✨ ${place} · sketched live · nothing here has been verified`,
+    caveat:typeof raw.caveat==="string"?raw.caveat:"",
+    data:cleanSketchEntries(raw.entries)
+  };
+}
+
+async function fetchSketch(place){
+  if(MOCK){await delay(650);return structuredClone(MOCK_SKETCH);}
+  const key=PROXY?"proxy":getKey();
+  if(!key)throw Object.assign(new Error("no key"),{friendly:"No API key stored for this page, so there's nothing to sketch with — the two verified boards above still work."});
+  const ac=new AbortController();
+  const timer=setTimeout(()=>ac.abort(),30000);
+  try{
+    const res=await fetch(PROXY||"https://api.anthropic.com/v1/messages",{
+      method:"POST",
+      headers:{
+        "content-type":"application/json",
+        "x-api-key":key,
+        "anthropic-version":"2023-06-01",
+        "anthropic-dangerous-direct-browser-access":"true"
+      },
+      signal:ac.signal,
+      body:JSON.stringify({
+        model:MODEL,
+        max_tokens:4096,               // thinking counts against this
+        output_config:{format:{type:"json_schema",schema:SKETCH_SCHEMA},effort:"low"},
+        messages:[{role:"user",content:buildSketchPrompt(place)}]
+      })
+    });
+    if(!res.ok)throw new Error("HTTP "+res.status);
+    const msg=await res.json();
+    if(msg.stop_reason!=="end_turn")throw new Error("stop_reason: "+msg.stop_reason);
+    return JSON.parse(msg.content.find(b=>b.type==="text").text); // thinking blocks may precede text
+  }finally{clearTimeout(timer);}
+}
+
+/* ---- wiring ---- */
+const sketchForm=$('sketchForm'),sketchInput=$('sketchInput'),
+      sketchGo=$('sketchGo'),sketchStatus=$('sketchStatus');
+let sketching=false;
+
+function setStatus(text,isErr){
+  sketchStatus.hidden=!text;
+  sketchStatus.textContent=text||"";
+  sketchStatus.classList.toggle('err',!!isErr);
+}
+
+$('sketchBtn').addEventListener('click',()=>{
+  sketchForm.hidden=false;
+  if(sketchCfg){placeId=SKETCH_ID;filter="all";renderPlace();}
+  sketchInput.focus();
+});
+
+sketchForm.addEventListener('submit',async ev=>{
+  ev.preventDefault();
+  if(sketching)return;
+  const place=sketchInput.value.trim();
+  if(!place){setStatus("Type a place first — a town, village or neighbourhood.",true);return;}
+  sketching=true;sketchGo.disabled=true;sketchInput.disabled=true;
+  setStatus(`Sketching ${place}… one call, no sources — this is the cold start.`,false);
+  try{
+    const raw=await fetchSketch(place);
+    const cfg=sketchToConfig(MOCK?"Market Harborough":place,raw);
+    if(!cfg.data.length)throw Object.assign(new Error("empty"),{friendly:`Nothing came back for “${place}” — which is itself the honest answer for some places.`});
+    sketchCfg=cfg;placeId=SKETCH_ID;filter="all";
+    renderPlace();
+    setStatus(MOCK
+      ?"Canned replay — no API call. On the day this ran live against the model; live sketching now happens on the live site."
+      :`Sketched ${cfg.name} from public knowledge in one call. Nothing below has been verified by anyone.`,false);
+  }catch(err){
+    // offline-graceful: the verified boards are still right there
+    setStatus((err&&err.friendly)||`Couldn't reach the model just now (${err.message}). The two verified boards above still work — that's the point of building them offline-first.`,true);
+  }finally{
+    sketching=false;sketchGo.disabled=false;sketchInput.disabled=false;
+  }
+});
+
+if(MOCK){
+  sketchForm.hidden=false;
+  sketchInput.value="Market Harborough";
+  var mockBadge=document.createElement('span');
+  mockBadge.id='mockFlag';
+  mockBadge.style.cssText='font:700 10px Inter,system-ui,sans-serif;letter-spacing:.05em;text-transform:uppercase;background:#4a86a8;color:#fff;padding:4px 9px;border-radius:6px;align-self:center';
+  mockBadge.textContent='mock mode — canned sketch, no api call';
+  sketchGo.parentNode.appendChild(mockBadge);
+}
+
+renderPlace();
+</script>
+<script>
+/* Museum frame — appears ONLY when this page is served from the frozen
+   /hackathon/ copy of the site. Everything above this line is the preserved
+   artifact; this bar is the frame around it, pointing back to the live site. */
+if(location.pathname.includes('/hackathon/')){
+  /* Canned archive: lock manual typing (readOnly, not disabled — demo/tour still work). */
+  try{document.querySelectorAll('input[type=text],input:not([type]),textarea').forEach(function(el){el.readOnly=true;el.style.cursor='not-allowed';el.style.background='#f0ece2';if('placeholder'in el)el.placeholder='Canned archive — press a demo button to see it run';});}catch(_){}
+  /* Docs-site pattern (Read the Docs / Wayback): the WHOLE banner is one big
+     link back to the live site; fixed positioning so no page layout can
+     swallow or reflow it. */
+  var __ft=document.createElement('a');
+  __ft.id='frozentop';
+  __ft.href='../index.html';
+  __ft.style.cssText='position:fixed;top:0;left:0;right:0;z-index:400;display:flex;gap:14px;align-items:center;justify-content:center;flex-wrap:wrap;background:#243244;color:#fff;padding:8px 16px;font:600 13.5px Inter,system-ui,sans-serif;text-decoration:none;box-shadow:0 3px 12px rgba(36,50,68,.3);cursor:pointer';
+  __ft.innerHTML='<span>\ud83c\udfc1 FROZEN \u2014 the hackathon build, 30 July 2026</span><span style="background:#e08a3c;color:#243244;border-radius:999px;padding:5px 15px;font-weight:700;white-space:nowrap">\u21a9 Step out to the live site</span><span id="frozenstory" style="color:#e08a3c;text-decoration:underline">or read the story</span>';
+  __ft.querySelector('#frozenstory').addEventListener('click',function(e){e.preventDefault();e.stopPropagation();location.href='../hackathon.html';});
+  document.body.prepend(__ft);
+  document.body.style.paddingTop='50px';
+  var __nav=document.querySelector('.sonav');if(__nav)__nav.style.top='46px';
+  var __fb=document.createElement('div');
+  __fb.setAttribute('id','frozenbar');
+  __fb.style.cssText='position:fixed;left:0;right:0;bottom:0;z-index:300;background:#243244;color:#fff;padding:10px 16px;text-align:center;font:600 13px Inter,system-ui,sans-serif;box-shadow:0 -4px 14px rgba(36,50,68,.18)';
+  __fb.innerHTML='\ud83c\udfc1 You\u2019re inside the frozen hackathon build \u00b7 <a href="../index.html" style="color:#e08a3c;font-weight:700">\u21a9 back to the live site</a> \u00b7 <a href="../hackathon.html" style="color:#e08a3c;font-weight:700">the story \u2192</a>';
+  document.body.appendChild(__fb);
+  document.body.style.paddingBottom='56px';
+}
+</script>
+</body>
+</html>

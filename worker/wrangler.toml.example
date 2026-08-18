@@ -1,0 +1,37 @@
+name = "step-out-proxy"
+main = "worker.js"
+compatibility_date = "2026-08-01"
+
+# Rate-limit counters live in a KV namespace. Create one and paste its id here:
+#   npx wrangler kv namespace create RATE
+# (Skipping KV disables rate limiting — don't skip it for a public deploy.)
+[[kv_namespaces]]
+binding = "RATE"
+id = "<your-kv-namespace-id>"
+
+# Verified-link cache for /enrich (shared across all visitors, so a place is
+# searched once then free). Create a second namespace and paste its id:
+#   npx wrangler kv namespace create LINKS
+# (Skipping LINKS just disables caching — enrichment still works, but repeats pay again.)
+[[kv_namespaces]]
+binding = "LINKS"
+id = "<your-links-kv-namespace-id>"
+
+[vars]
+# Browser origins allowed to call the proxy (comma-separated; origins carry no
+# path, so the repo name doesn't matter). Use your Cloudflare Pages custom
+# domain plus the *.pages.dev preview origin.
+ALLOWED_ORIGINS = "https://stepout.kashifnazir.com,https://step-out.pages.dev"
+MODEL = "claude-haiku-4-5"
+MAX_TOKENS = "2048"
+DAILY_CAP = "200"
+IP_CAP = "10"
+
+# The API key is a secret, never a var. Use a key from a dedicated workspace
+# with a monthly spend limit set in the Anthropic Console (the real backstop):
+#   npx wrangler secret put ANTHROPIC_API_KEY
+#
+# Brave Search API token, also a secret — powers /enrich's link search cheaply
+# (free tier: 2,000 queries/month). Get one at https://api-dashboard.search.brave.com
+# then:
+#   npx wrangler secret put BRAVE_API_KEY

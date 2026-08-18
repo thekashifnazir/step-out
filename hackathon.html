@@ -1,0 +1,200 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Step Out — the hackathon</title>
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🏁</text></svg>">
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,600;9..144,900&family=Inter:wght@400;500;600;700&display=swap');
+  :root{
+    --ink:#243244;--ink-soft:#5a6a7d;--paper:#f8f1e2;--card:#fffdf8;--line:#e7dfcf;
+    --amber:#e08a3c;--amber-deep:#c56a1f;--sky:#4a86a8;--good:#3f8a56;--warn:#b9772a;--red:#b3543f;
+    --radius:16px;--shadow:0 2px 4px rgba(36,50,68,.05),0 10px 30px rgba(36,50,68,.07);--hand:'Fraunces',serif;
+    --amber-soft:rgba(224,138,60,.09);
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{font-family:Inter,system-ui,sans-serif;background:var(--paper);color:var(--ink);line-height:1.5;-webkit-font-smoothing:antialiased}
+  .wrap{max-width:940px;margin:0 auto;padding:0 clamp(20px,4vw,40px)}
+  a:focus-visible{outline:2px solid var(--amber-deep);outline-offset:2px;border-radius:4px}
+
+  header.hero{padding:clamp(2.4rem,5vw,3.6rem) 0 clamp(1.4rem,2.8vw,2rem)}
+  .kicker{font:700 12.5px Inter;letter-spacing:.14em;text-transform:uppercase;color:var(--amber-deep)}
+  .hero h1{font-family:var(--hand);font-weight:900;font-size:clamp(2.2rem,6vw,3.4rem);letter-spacing:-.03em;line-height:1;margin:12px 0 16px}
+  .hero .lede{color:var(--ink-soft);font-size:16.5px;max-width:60ch}
+
+  section{border-top:1px solid var(--line);padding:clamp(1.2rem,2.4vw,1.7rem) 0}
+  h2{font-family:var(--hand);font-weight:600;font-size:clamp(1.4rem,2.8vw,1.8rem);letter-spacing:-.01em;margin-bottom:14px}
+  .prose p{font-size:15.5px;max-width:64ch;margin-bottom:14px}
+  .prose p b{color:var(--amber-deep)}
+  .story p{font-family:var(--hand);font-weight:400;font-size:clamp(1.05rem,2vw,1.25rem);line-height:1.55;max-width:58ch;margin-bottom:12px}
+  .story em{font-style:italic;color:var(--amber-deep)}
+  blockquote{border-left:3px solid var(--amber);padding:6px 0 6px 20px;margin:22px 0 8px;max-width:56ch}
+  blockquote p{font-family:var(--hand);font-style:italic;font-weight:400;font-size:17px;line-height:1.5;color:var(--ink)}
+  blockquote cite{display:block;font:600 12.5px Inter;font-style:normal;letter-spacing:.08em;text-transform:uppercase;color:var(--ink-soft);margin-top:8px}
+
+  .numbers{display:grid;grid-template-columns:repeat(4,1fr);gap:18px;margin-top:24px}
+  .num b{display:block;font-family:var(--hand);font-weight:900;font-size:clamp(1.7rem,3.6vw,2.4rem);letter-spacing:-.02em;line-height:1.1;color:var(--ink)}
+  .num span{display:block;font-size:13px;color:var(--ink-soft);margin-top:6px;max-width:24ch}
+
+  /* timeline of the build */
+  .tl{list-style:none;margin-top:8px;display:flex;flex-direction:column;gap:0}
+  .tl li{position:relative;padding:0 0 20px 28px;font-size:14.5px;max-width:66ch}
+  .tl li::before{content:"";position:absolute;left:6px;top:7px;width:9px;height:9px;border-radius:50%;background:var(--amber-deep)}
+  .tl li:not(:last-child)::after{content:"";position:absolute;left:10px;top:18px;bottom:-2px;width:1.5px;background:var(--line)}
+  .tl .t{font:700 12px Inter;letter-spacing:.06em;color:var(--amber-deep);margin-right:8px}
+  .tl b{color:var(--ink)}
+  .tl span.d{color:var(--ink-soft)}
+
+  /* exhibits */
+  .gallery{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;margin-top:20px}
+  .surface{display:flex;flex-direction:column;gap:8px;background:var(--card);border:1px solid var(--line);border-radius:var(--radius);padding:18px;text-decoration:none;color:var(--ink);box-shadow:var(--shadow);transition:border-color .18s}
+  .surface:hover{border-color:var(--amber)}
+  .surface--featured{grid-column:1/-1;padding:24px 26px;background:linear-gradient(150deg,#26374d,#1b2635);border:1px solid #33475f;color:var(--paper);box-shadow:0 4px 10px rgba(20,28,40,.16),0 20px 46px rgba(20,28,40,.24);transition:transform .18s,box-shadow .18s}
+  .surface--featured:hover{border-color:#33475f;transform:translateY(-3px);box-shadow:0 10px 20px rgba(20,28,40,.24),0 28px 64px rgba(20,28,40,.32)}
+  .surface--featured h3{color:#fff}
+  .surface.surface--featured p{color:#e8edf4} /* .surface.surface--featured beats the later .surface p rule */
+  .surface.surface--featured .open{display:inline-flex;align-items:center;gap:6px;align-self:flex-start;font:700 13.5px Inter;color:#1b2635;background:var(--amber);border-radius:999px;padding:9px 17px;margin-top:5px}
+  .surface--featured:hover .open{background:#fff}
+  .surface--featured .status--prop{color:var(--amber);border-color:var(--amber)}
+  .status{font:700 10.5px Inter;letter-spacing:.08em;text-transform:uppercase;border-radius:999px;padding:3px 9px;border:1.5px solid;align-self:flex-start}
+  .status--live{color:var(--good);border-color:var(--good)}
+  .status--concept{color:var(--sky);border-color:var(--sky)}
+  .status--prop{color:var(--ink-soft);border-color:var(--ink-soft)}
+  .surface h3{font-family:var(--hand);font-weight:600;font-size:17.5px}
+  .surface--featured h3{font-size:20px}
+  .surface p{font-size:13px;color:var(--ink-soft);flex:1}
+  .surface .open{font:600 12.5px Inter;color:var(--amber-deep)}
+  .surface:hover .open{color:var(--ink)}
+  .frozen-note{font-size:13.5px;color:var(--ink-soft);max-width:64ch;margin-top:18px}
+  .frozen-note b{color:var(--ink)}
+
+  footer{border-top:2px solid var(--line);padding:26px 0 48px;color:var(--ink-soft);font-size:13.5px}
+  footer .brand{font-family:var(--hand);font-weight:600;font-size:17px;color:var(--ink);margin-bottom:6px}
+  footer p{max-width:65ch}
+  footer a{color:var(--amber-deep);font-weight:600;text-decoration:none}
+
+  @media (max-width:768px){
+    .gallery{grid-template-columns:1fr}
+    .surface--featured{grid-column:auto}
+    .numbers{grid-template-columns:repeat(2,1fr)}
+  }
+
+  /* ===== Step Out product nav (site v3) ===== */
+  html{scroll-padding-top:64px}
+  .sonav{position:sticky;top:0;z-index:200;display:flex;gap:14px;align-items:center;background:var(--paper);border-bottom:1px solid var(--line);padding:10px 20px;overflow-x:auto;scrollbar-width:none}
+  .sonav::-webkit-scrollbar{display:none}
+  .sonav-brand{font-family:var(--hand);font-weight:600;font-size:17px;color:var(--ink);text-decoration:none;flex:0 0 auto}
+  .sonav-links{display:flex;gap:8px;flex:0 0 auto;align-items:center}
+  .sonav-links a{font:600 13px Inter,system-ui,sans-serif;color:var(--ink-soft);text-decoration:none;border:2px solid var(--line);background:var(--card);border-radius:999px;padding:6px 13px;white-space:nowrap;flex:0 0 auto;transition:all .15s}
+  .sonav-links a:hover{border-color:var(--amber)}
+  .sonav-links a[aria-current="page"]{background:var(--ink);border-color:var(--ink);color:#fff}
+  .sonav-links a.sonav-hack{border-style:dashed;border-color:var(--amber);margin-left:10px}
+  .sonav-links a.sonav-hack[aria-current="page"]{background:var(--amber-deep);border-color:var(--amber-deep);color:#fff}
+  /* ===== editorial contact footer (ported from kashifnazir.com) ===== */
+  footer.sofoot{border-top:3px solid var(--amber-deep);padding:clamp(1.6rem,3.5vw,2.3rem) 0 1.8rem;margin-top:10px;color:var(--ink-soft)}
+  .sofoot__inner{display:flex;justify-content:space-between;align-items:flex-start;gap:22px;flex-wrap:wrap;margin-bottom:1.4rem}
+  .sofoot__name{font-family:var(--hand);font-weight:600;font-size:1.3rem;letter-spacing:-.02em;color:var(--ink);text-decoration:none;display:block;margin-bottom:3px;transition:color .2s}
+  .sofoot__name:hover{color:var(--amber-deep)}
+  .sofoot__role{font:400 13px Inter,system-ui,sans-serif;color:var(--ink-soft);margin:0}
+  .sofoot__right{display:flex;align-items:center;gap:16px;flex-wrap:wrap}
+  .sofoot__site{font:600 11.5px Inter,system-ui,sans-serif;letter-spacing:.07em;text-transform:uppercase;color:var(--ink-soft);text-decoration:none;transition:color .2s}
+  .sofoot__site:hover{color:var(--amber-deep)}
+  .sofoot__icons{display:flex;gap:15px}
+  .sofoot__icons a{color:var(--ink-soft);transition:color .2s;display:inline-flex}
+  .sofoot__icons a:hover{color:var(--amber-deep)}
+  .sofoot__icons svg{width:20px;height:20px}
+  .sofoot__bottom{padding-top:1.3rem;border-top:1px solid var(--line);font-size:12px;letter-spacing:.03em;color:var(--ink-soft);opacity:.75}
+</style>
+</head>
+<body>
+<nav class="sonav" aria-label="Step Out">
+  <a class="sonav-brand" href="index.html">🚪 Step&nbsp;Out</a>
+  <div class="sonav-links">
+    <a href="board.html">Board</a>
+    <a href="snap.html">Snap</a>
+    <a href="about.html">About</a>    <a class="sonav-hack" href="hackathon.html" aria-current="page">🏁 Hackathon</a>
+  </div>
+</nav>
+
+<div class="wrap">
+
+  <header class="hero" id="writeup">
+    <div class="kicker">🏁 Claude Impact Lab London · 30 July 2026 · solo build</div>
+    <h1>Three hours and ten minutes</h1>
+    <p class="lede">I got to the venue early and walked the streets around it. Two corners away were two chalkboards, both full of local life, and I don't think either one is online. Then a woman spent twenty minutes at the museum's coffee cart telling me what actually goes on around there. I'd have missed all of it with my headphones in, which is what I'd normally have had in.</p>
+  </header>
+
+  <!-- ============ the brief ============ -->
+  <section class="story">
+    <h2>The brief</h2>
+    <blockquote>
+      <p>“How can AI help communities thrive? Instead of centralising opportunities, how can it expose them locally and match people to what's needed?”</p>
+      <cite>The event brief, theme three</cite>
+    </blockquote>
+    <p>Theme three asked how AI could surface local opportunity and match people to it. I'd spent the hour before that looking at two examples of it, chalked up on a wall and invisible to anyone not standing in front of them.</p>
+  </section>
+
+  <!-- ============ the plan, and how it grew ============ -->
+  <section class="prose">
+    <h2>The plan, and what it became</h2>
+    <p>I planned it the night before and de-risked everything I could: proved the model path live, pinned the request shape, wrote a smoke test to run in the first ten minutes. The build order was a ladder, <b>the chat matcher first</b>, and nothing else until that held.</p>
+    <p>On the day one integrator session ran parallel Claude Code agent streams, each in its own git worktree, each merged and verified before it counted. The ladder held early, and the scope kept growing all evening.</p>
+    <ol class="tl">
+      <li><span class="t">15:30</span><b>Smoke test green</b> <span class="d">— live model call confirmed, and four streams cut immediately.</span></li>
+      <li><span class="t">16:20</span><b>Live end to end</b> <span class="d">— real entries on the board and the matcher answering live, with a 40-check eval battery already forcing prompt rewrites.</span></li>
+      <li><span class="t">16:45</span><b>Demand detection</b> <span class="d">— working, and a year-on-year check measured 86% churn in listed opportunities.</span></li>
+      <li><span class="t">17:40</span><b>Snap</b> <span class="d">— photo or PDF into structured entries, contact details stripped back to roles, demoed live.</span></li>
+      <li><span class="t">18:10</span><b>Freeze</b> <span class="d">— demo board locked, though Journey, the any-place sketcher and a site audit all landed after it.</span></li>
+      <li><span class="t">18:40</span><b>Full run</b> <span class="d">— one sentence about baking returned a course, a stall venue, a café and a £2,000 fund.</span></li>
+    </ol>
+    <div class="numbers">
+      <div class="num"><b>3h10</b><span>the whole build window, solo</span></div>
+      <div class="num"><b>28</b><span>changes, each stamped with a verify command at a commit</span></div>
+      <div class="num"><b>40</b><span>automated checks the matcher prompt had to keep passing as it changed</span></div>
+      <div class="num"><b>86%</b><span>of listed opportunities changed within a year, measured on the day</span></div>
+    </div>
+  </section>
+
+  <!-- ============ what I'd do differently ============ -->
+  <section class="prose">
+    <h2>What I'd do differently</h2>
+    <p>I think the factor I'd change is how many features I built. There was a point in the evening where I was expanding the scope because I could, and not because it needed it. The build order was meant to stop that, since I'd decided the night before that nothing started until the chat matcher was answering live, and then the next item only once that was proven. However it didn't stop me adding to it, and so once the chat matcher was working, I just kept going. I think three or four ideas polished properly would have made a better demo than twenty-eight things that mostly work.</p>
+    <p>It was my first hackathon and I probably underestimated what doing it solo really meant. I think a lot of the scope problem happened because there was nobody sat there to tell me no. I'm signing up for more hackathons, and next time I'd want to be in a team, either roping in a few people I know or joining one on the day.</p>
+  </section>
+
+  <!-- ============ the exhibits ============ -->
+  <section>
+    <h2>The build, frozen</h2>
+    <div class="gallery">
+      <a class="surface surface--featured" href="hackathon/index.html">
+        <span class="status status--prop">The frozen site</span>
+        <h3>Enter the frozen site →</h3>
+        <p>Every surface, exactly as it stood at the end of the day: the Somers Town board, Snap, the demand engine, Journey, Places, Organisers, the app mock and the eval harness, from its own landing page. A banner brings you back whenever you're done.</p>
+        <span class="open">Step in →</span>
+      </a>
+    </div>
+  </section>
+
+  <!-- ============ footer ============ -->
+  <footer class="sofoot">
+    <div class="sofoot__inner">
+      <div>
+        <a href="https://kashifnazir.com" target="_blank" rel="noopener" class="sofoot__name">Kashif Nazir</a>
+        <p class="sofoot__role">Senior Technical Architect</p>
+      </div>
+      <div class="sofoot__right">
+        <a href="https://kashifnazir.com" target="_blank" rel="noopener" class="sofoot__site">kashifnazir.com</a>
+        <div class="sofoot__icons">
+          <a href="https://github.com/thekashifnazir" target="_blank" rel="noopener noreferrer me" title="GitHub" aria-label="GitHub"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 19c-5 1.5-5-2.5-7-3m14 6v-3.87a3.37 3.37 0 0 0-.94-2.61c3.14-.35 6.44-1.54 6.44-7A5.44 5.44 0 0 0 20 4.77 5.07 5.07 0 0 0 19.91 1S18.73.65 16 2.48a13.38 13.38 0 0 0-7 0C6.27.65 5.09 1 5.09 1A5.07 5.07 0 0 0 5 4.77a5.44 5.44 0 0 0-1.5 3.78c0 5.42 3.3 6.61 6.44 7A3.37 3.37 0 0 0 9 18.13V22"/></svg></a>
+          <a href="https://www.linkedin.com/in/kashifnazir" target="_blank" rel="noopener noreferrer me" title="LinkedIn" aria-label="LinkedIn"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 8a6 6 0 0 1 6 6v7h-4v-7a2 2 0 0 0-2-2 2 2 0 0 0-2 2v7h-4v-7a6 6 0 0 1 6-6z"/><rect x="2" y="9" width="4" height="12"/><circle cx="4" cy="4" r="2"/></svg></a>
+          <a href="mailto:contact@kashifnazir.com" title="Email" aria-label="Email"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 21" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg></a>
+        </div>
+      </div>
+    </div>
+    <div class="sofoot__bottom">© 2026 Kashif Nazir</div>
+  </footer>
+
+</div>
+</body>
+</html>

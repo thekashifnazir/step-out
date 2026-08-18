@@ -1,0 +1,201 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Step Out — the local opportunity around you</title>
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🚪</text></svg>">
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,600;9..144,900&family=Inter:wght@400;500;600;700&display=swap');
+  :root{
+    --ink:#243244;--ink-soft:#5a6a7d;--paper:#f8f1e2;--card:#fffdf8;--line:#e7dfcf;
+    --amber:#e08a3c;--amber-deep:#c56a1f;--sky:#4a86a8;--good:#3f8a56;--warn:#b9772a;--red:#b3543f;
+    --radius:16px;--shadow:0 2px 4px rgba(36,50,68,.05),0 10px 30px rgba(36,50,68,.07);--hand:'Fraunces',serif;
+    --amber-soft:rgba(224,138,60,.09);
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{font-family:Inter,system-ui,sans-serif;background:var(--paper);color:var(--ink);line-height:1.5;-webkit-font-smoothing:antialiased}
+  .wrap{max-width:1020px;margin:0 auto;padding:0 clamp(20px,4vw,40px)}
+  a:focus-visible,button:focus-visible{outline:2px solid var(--amber-deep);outline-offset:2px;border-radius:4px}
+
+  /* ===== hero ===== */
+  .hero{padding:clamp(3rem,7vw,5.2rem) 0 clamp(1.6rem,3vw,2.4rem)}
+  .kicker{font:700 12.5px Inter;letter-spacing:.14em;text-transform:uppercase;color:var(--amber-deep)}
+  .hero h1{font-family:var(--hand);font-weight:900;font-size:clamp(2.9rem,7.5vw,4.6rem);letter-spacing:-.03em;line-height:.98;margin:14px 0 18px}
+  .hero .tagline{font-family:var(--hand);font-weight:600;font-size:clamp(1.25rem,2.6vw,1.7rem);line-height:1.3;letter-spacing:-.01em;max-width:30ch;margin-bottom:16px}
+  .hero .lede{color:var(--ink-soft);font-size:16.5px;max-width:58ch;margin-bottom:30px}
+
+  /* the one big ask: where are you? */
+  .placeform{display:flex;gap:10px;flex-wrap:wrap;max-width:640px}
+  .placeform input{flex:1 1 320px;font:500 17px Inter;color:var(--ink);background:var(--card);border:2px solid var(--line);border-radius:999px;padding:15px 24px;outline:none;transition:border-color .15s}
+  .placeform input:focus{border-color:var(--amber)}
+  .placeform button{font:700 15.5px Inter;background:var(--amber-deep);color:#fff;border:none;border-radius:999px;padding:15px 26px;cursor:pointer;transition:background .18s}
+  .placeform button:hover{background:var(--ink)}
+  .formnote{font-size:13px;color:var(--ink-soft);margin-top:12px;max-width:58ch}
+  .formnote b{color:var(--ink)}
+
+  /* ===== section rhythm ===== */
+  section{border-top:1px solid var(--line);padding:clamp(1.3rem,2.6vw,1.9rem) 0}
+  .sec-head{display:flex;align-items:baseline;justify-content:space-between;gap:16px;flex-wrap:wrap;margin-bottom:8px}
+  .sec-head h2{font-family:var(--hand);font-weight:600;font-size:clamp(1.5rem,3vw,1.9rem);letter-spacing:-.01em}
+  .sec-note{color:var(--ink-soft);font-size:14.5px;max-width:65ch;margin-bottom:26px}
+  .sec-note a{color:var(--amber-deep);font-weight:600;text-decoration:none}
+  .sec-note a:hover{color:var(--ink)}
+
+  /* ===== cards ===== */
+  .gallery{display:grid;grid-template-columns:repeat(2,1fr);gap:18px;margin-top:8px}
+  .surface{display:flex;flex-direction:column;gap:9px;background:var(--card);border:1px solid var(--line);border-radius:var(--radius);padding:22px;text-decoration:none;color:var(--ink);box-shadow:var(--shadow);transition:border-color .18s}
+  .surface:hover{border-color:var(--amber)}
+  .surface:active{transform:scale(.98)}
+  .surface .meta{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+  .status{font:700 11px Inter;letter-spacing:.08em;text-transform:uppercase;border-radius:999px;padding:3px 10px;border:1.5px solid}
+  .status--live{color:var(--good);border-color:var(--good)}
+  .status--rural{color:var(--sky);border-color:var(--sky)}
+  .surface h3{font-family:var(--hand);font-weight:600;font-size:21px}
+  .surface p{font-size:14px;color:var(--ink-soft);flex:1}
+  .surface .open{font:600 13px Inter;color:var(--amber-deep)}
+  .surface:hover .open{color:var(--ink)}
+
+  /* ===== the three functions ===== */
+  .fns{display:grid;grid-template-columns:repeat(2,1fr);gap:24px;margin-top:8px;max-width:760px}
+  .fn h3{font:700 13px Inter;letter-spacing:.14em;text-transform:uppercase;color:var(--amber-deep);margin-bottom:8px}
+  .fn p{font-size:14.5px;color:var(--ink);max-width:36ch;margin-bottom:10px}
+  .fn a{font:600 13.5px Inter;color:var(--amber-deep);text-decoration:none}
+  .fn a:hover{color:var(--ink)}
+
+  /* ===== hackathon teaser ===== */
+  .hackcard{display:flex;flex-direction:column;gap:11px;background:linear-gradient(150deg,#26374d,#1b2635);border:1px solid #33475f;border-radius:var(--radius);padding:26px 28px;text-decoration:none;color:var(--paper);box-shadow:0 4px 10px rgba(20,28,40,.16),0 20px 46px rgba(20,28,40,.24);transition:transform .18s,box-shadow .18s;max-width:680px}
+  .hackcard:hover{transform:translateY(-3px);box-shadow:0 10px 20px rgba(20,28,40,.24),0 28px 64px rgba(20,28,40,.32)}
+  .hackcard .flag{font:700 11px Inter;letter-spacing:.09em;text-transform:uppercase;color:var(--amber)}
+  .hackcard h3{font-family:var(--hand);font-weight:600;font-size:23px;color:#fff}
+  .hackcard p{font-size:14px;color:#e8edf4}
+  .hackcard .open{display:inline-flex;align-items:center;gap:6px;align-self:flex-start;font:700 13.5px Inter;color:#1b2635;background:var(--amber);border-radius:999px;padding:9px 17px;margin-top:5px}
+  .hackcard:hover .open{background:#fff}
+
+  /* ===== footer ===== */
+  footer{border-top:2px solid var(--line);padding:26px 0 48px;color:var(--ink-soft);font-size:13.5px}
+  footer .brand{font-family:var(--hand);font-weight:600;font-size:17px;color:var(--ink);margin-bottom:6px}
+  footer p{max-width:65ch}
+  footer a{color:var(--amber-deep);font-weight:600;text-decoration:none}
+  footer a:hover{color:var(--ink)}
+
+  @media (prefers-reduced-motion: reduce){
+    *{transition:none !important}
+    .surface:active{transform:none}
+  }
+  @media (max-width:768px){
+    .gallery{grid-template-columns:1fr}
+    .fns{grid-template-columns:1fr}
+    .placeform button{width:100%}
+  }
+
+  /* ===== Step Out product nav (site v3) ===== */
+  html{scroll-padding-top:64px}
+  .sonav{position:sticky;top:0;z-index:200;display:flex;gap:14px;align-items:center;background:var(--paper);border-bottom:1px solid var(--line);padding:10px 20px;overflow-x:auto;scrollbar-width:none}
+  .sonav::-webkit-scrollbar{display:none}
+  .sonav-brand{font-family:var(--hand);font-weight:600;font-size:17px;color:var(--ink);text-decoration:none;flex:0 0 auto}
+  .sonav-links{display:flex;gap:8px;flex:0 0 auto;align-items:center}
+  .sonav-links a{font:600 13px Inter,system-ui,sans-serif;color:var(--ink-soft);text-decoration:none;border:2px solid var(--line);background:var(--card);border-radius:999px;padding:6px 13px;white-space:nowrap;flex:0 0 auto;transition:all .15s}
+  .sonav-links a:hover{border-color:var(--amber)}
+  .sonav-links a[aria-current="page"]{background:var(--ink);border-color:var(--ink);color:#fff}
+  .sonav-links a.sonav-hack{border-style:dashed;border-color:var(--amber);margin-left:10px}
+  .sonav-links a.sonav-hack[aria-current="page"]{background:var(--amber-deep);border-color:var(--amber-deep);color:#fff}
+  /* ===== editorial contact footer (ported from kashifnazir.com) ===== */
+  footer.sofoot{border-top:3px solid var(--amber-deep);padding:clamp(1.6rem,3.5vw,2.3rem) 0 1.8rem;margin-top:10px;color:var(--ink-soft)}
+  .sofoot__inner{display:flex;justify-content:space-between;align-items:flex-start;gap:22px;flex-wrap:wrap;margin-bottom:1.4rem}
+  .sofoot__name{font-family:var(--hand);font-weight:600;font-size:1.3rem;letter-spacing:-.02em;color:var(--ink);text-decoration:none;display:block;margin-bottom:3px;transition:color .2s}
+  .sofoot__name:hover{color:var(--amber-deep)}
+  .sofoot__role{font:400 13px Inter,system-ui,sans-serif;color:var(--ink-soft);margin:0}
+  .sofoot__right{display:flex;align-items:center;gap:16px;flex-wrap:wrap}
+  .sofoot__site{font:600 11.5px Inter,system-ui,sans-serif;letter-spacing:.07em;text-transform:uppercase;color:var(--ink-soft);text-decoration:none;transition:color .2s}
+  .sofoot__site:hover{color:var(--amber-deep)}
+  .sofoot__icons{display:flex;gap:15px}
+  .sofoot__icons a{color:var(--ink-soft);transition:color .2s;display:inline-flex}
+  .sofoot__icons a:hover{color:var(--amber-deep)}
+  .sofoot__icons svg{width:20px;height:20px}
+  .sofoot__bottom{padding-top:1.3rem;border-top:1px solid var(--line);font-size:12px;letter-spacing:.03em;color:var(--ink-soft);opacity:.75}
+</style>
+</head>
+<body>
+<nav class="sonav" aria-label="Step Out">
+  <a class="sonav-brand" href="index.html">🚪 Step&nbsp;Out</a>
+  <div class="sonav-links">
+    <a href="board.html">Board</a>
+    <a href="snap.html">Snap</a>
+    <a href="about.html">About</a>    <a class="sonav-hack" href="hackathon.html">🏁 Hackathon</a>
+  </div>
+</nav>
+
+<div class="wrap">
+
+  <!-- ============ hero: the one big ask ============ -->
+  <header class="hero">
+    <div class="kicker">Community opportunity, matched to how things actually are for you</div>
+    <h1>Step Out</h1>
+    <p class="tagline">Every place is full of ways in. Most of them are invisible.</p>
+    <p class="lede">Step Out matches local life to a plain sentence about you — in whatever language you write.</p>
+    <form class="placeform" id="placeForm" action="board.html" method="get">
+      <input type="text" name="sketch" id="placeInput" autocomplete="off" maxlength="80"
+             placeholder="Where do you live? a town, village or neighbourhood in the UK"
+             aria-label="Where do you live? A town, village or neighbourhood in the UK">
+      <button type="submit">Build my board →</button>
+    </form>
+    <p class="seeexample" style="margin-top:14px"><a href="board.html?example=1" style="display:inline-block;font:600 14px Inter,system-ui,sans-serif;color:var(--amber-deep,#c56a1f);text-decoration:none;border:2px solid var(--amber,#e08a3c);border-radius:999px;padding:9px 18px">👀 New here? See an example board first →</a></p>
+  </header>
+
+  <!-- Worked example boards (Somers Town, Foxton) live in the frozen hackathon
+       wing — the live site is make-your-own; the hackathon teaser below links to
+       them, so we don't duplicate that data here. -->
+
+  <!-- ============ the two functions ============ -->
+  <section>
+    <div class="sec-head">
+      <h2>What it does</h2>
+    </div>
+    <div class="fns">
+      <div class="fn">
+        <h3>Match</h3>
+        <p>Describe your situation in a sentence — <i>“I just moved here and don't know anyone,” “I want to sell my cakes”</i>.</p>
+        <p>You get a shortlist of local things that fit, each with a plain reason why — and, if it's a project, a step-by-step path to do it.</p>
+        <a href="board.html">Ask the board →</a>
+      </div>
+      <div class="fn">
+        <h3>Snap</h3>
+        <p>Photograph a noticeboard or drop in a PDF newsletter. Step Out reads it into clean entries.</p>
+        <a href="snap.html">Snap a flyer →</a>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ hackathon teaser ============ -->
+  <section>
+    <a class="hackcard" href="hackathon.html">
+      <span class="flag">🏁 Where this came from</span>
+      <h3>Built solo in 3 hours at a hackathon</h3>
+      <p>Claude Impact Lab London, 30 July 2026 — 28 features shipped, and the original build preserved exactly as it stood at the end of the day.</p>
+      <span class="open">The story, the numbers, and the frozen build →</span>
+    </a>
+  </section>
+
+  <!-- ============ footer ============ -->
+  <footer class="sofoot">
+    <div class="sofoot__inner">
+      <div>
+        <a href="https://kashifnazir.com" target="_blank" rel="noopener" class="sofoot__name">Kashif Nazir</a>
+        <p class="sofoot__role">Senior Technical Architect</p>
+      </div>
+      <div class="sofoot__right">
+        <a href="https://kashifnazir.com" target="_blank" rel="noopener" class="sofoot__site">kashifnazir.com</a>
+        <div class="sofoot__icons">
+          <a href="https://github.com/thekashifnazir" target="_blank" rel="noopener noreferrer me" title="GitHub" aria-label="GitHub"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 19c-5 1.5-5-2.5-7-3m14 6v-3.87a3.37 3.37 0 0 0-.94-2.61c3.14-.35 6.44-1.54 6.44-7A5.44 5.44 0 0 0 20 4.77 5.07 5.07 0 0 0 19.91 1S18.73.65 16 2.48a13.38 13.38 0 0 0-7 0C6.27.65 5.09 1 5.09 1A5.07 5.07 0 0 0 5 4.77a5.44 5.44 0 0 0-1.5 3.78c0 5.42 3.3 6.61 6.44 7A3.37 3.37 0 0 0 9 18.13V22"/></svg></a>
+          <a href="https://www.linkedin.com/in/kashifnazir" target="_blank" rel="noopener noreferrer me" title="LinkedIn" aria-label="LinkedIn"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 8a6 6 0 0 1 6 6v7h-4v-7a2 2 0 0 0-2-2 2 2 0 0 0-2 2v7h-4v-7a6 6 0 0 1 6-6z"/><rect x="2" y="9" width="4" height="12"/><circle cx="4" cy="4" r="2"/></svg></a>
+          <a href="mailto:contact@kashifnazir.com" title="Email" aria-label="Email"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 21" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg></a>
+        </div>
+      </div>
+    </div>
+    <div class="sofoot__bottom">© 2026 Kashif Nazir</div>
+  </footer>
+
+</div>
+</body>
+</html>

@@ -1,0 +1,1475 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Step Out — the board</title>
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🚪</text></svg>">
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,600;9..144,900&family=Inter:wght@400;500;600;700&display=swap');
+  :root{
+    --ink:#243244;--ink-soft:#5a6a7d;--paper:#f8f1e2;--card:#fffdf8;--line:#e7dfcf;
+    --amber:#e08a3c;--amber-deep:#c56a1f;--sky:#4a86a8;--good:#3f8a56;--warn:#b9772a;--red:#b3543f;
+    --radius:16px;--shadow:0 2px 4px rgba(36,50,68,.05),0 10px 30px rgba(36,50,68,.07);--hand:'Fraunces',serif;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{font-family:Inter,system-ui,sans-serif;background:var(--paper);color:var(--ink);line-height:1.5;-webkit-font-smoothing:antialiased}
+  .wrap{max-width:940px;margin:0 auto;padding:0 20px}
+  header{padding:30px 0 10px}
+  .kicker{font:700 12px Inter;letter-spacing:.1em;text-transform:uppercase;color:var(--amber-deep)}
+  h1{font-family:var(--hand);font-weight:900;font-size:clamp(28px,5vw,40px);letter-spacing:-.02em;margin:6px 0 8px;line-height:1.05}
+  .sub{color:var(--ink-soft);font-size:15.5px;max-width:62ch}
+  .loc{display:inline-flex;gap:8px;align-items:center;background:var(--card);border:2px solid var(--line);border-radius:999px;padding:8px 16px;font:600 14px Inter;margin-top:14px}
+  .disclaimer{font-size:12.5px;color:var(--ink-soft);font-style:italic;margin-top:10px;max-width:70ch}
+
+  .places{display:flex;gap:8px;flex-wrap:wrap;margin:20px 0 4px}
+  .pbtn{border:2px solid var(--line);background:var(--card);border-radius:999px;padding:10px 16px;font:600 14px Inter;color:var(--ink-soft);cursor:pointer;transition:all .16s;display:flex;flex-direction:column;align-items:flex-start;line-height:1.2}
+  .pbtn small{font-weight:400;font-size:11px;opacity:.8}
+  .pbtn[aria-pressed="true"]{background:var(--ink);color:#fff;border-color:var(--ink)}
+  .pbtn:hover{border-color:var(--amber)}
+
+  /* group labels: the honesty split — verified example boards vs your own sketch */
+  .glabel{font:700 11.5px Inter;letter-spacing:.08em;text-transform:uppercase;color:var(--ink-soft);margin:20px 0 0}
+  .pbtn.sketchbtn{border-style:dashed;border-color:var(--amber)}
+  .pbtn.sketchbtn[aria-pressed="true"]{background:var(--amber-deep);border-color:var(--amber-deep);color:#fff}
+  .pbtn.minebtn{border-style:dashed}
+  .sketchform{display:flex;gap:8px;flex-wrap:wrap;margin:10px 0 0}
+  .sketchform input{flex:1 1 340px;border:2px solid var(--line);background:var(--card);border-radius:12px;padding:11px 14px;font:400 14.5px Inter;color:var(--ink)}
+  .sketchform input:focus{outline:none;border-color:var(--amber)}
+  .sketchform button{border:2px solid var(--ink);background:var(--ink);color:#fff;border-radius:12px;padding:11px 18px;font:600 14px Inter;cursor:pointer}
+  .sketchform button[disabled]{opacity:.45;cursor:progress}
+  .sketchstatus{font-size:13px;color:var(--ink-soft);margin-top:9px;max-width:70ch}
+  .sketchstatus.err{color:var(--red)}
+
+  .banner{background:#fbeee0;border:2px dashed var(--amber);border-radius:var(--radius);padding:17px 19px;margin:18px 0 2px}
+  .banner p{font-size:14px;max-width:70ch}
+  .banner .caveat{font-size:13.5px;color:var(--ink-soft);font-style:italic;margin-top:9px}
+
+  .controls{display:flex;gap:10px;flex-wrap:wrap;margin:22px 0 6px;align-items:center}
+  .controls .lbl{font:600 13px Inter;color:var(--ink-soft)}
+  .chip{border:2px solid var(--line);background:var(--card);border-radius:999px;padding:8px 15px;font:600 13.5px Inter;color:var(--ink-soft);cursor:pointer;transition:all .15s;display:flex;gap:7px;align-items:center}
+  .chip[aria-pressed="true"]{background:var(--ink);color:#fff;border-color:var(--ink)}
+  .chip:hover{border-color:var(--amber)}
+
+  h2.section{font-family:var(--hand);font-weight:600;font-size:22px;margin:30px 0 4px}
+  .section-note{color:var(--ink-soft);font-size:14px;margin-bottom:16px}
+
+  .grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:16px}
+  .card{background:var(--card);border:2px solid var(--line);border-radius:var(--radius);padding:17px;box-shadow:var(--shadow);display:flex;flex-direction:column;gap:9px}
+  .card.anchor{border-color:var(--amber)}
+  .card.frompdf{position:relative}
+  .card.frompdf::after{content:"📄 from one messy PDF";position:absolute;top:-11px;right:12px;background:var(--sky);color:#fff;font:700 10px Inter;letter-spacing:.04em;padding:4px 9px;border-radius:6px}
+  .top{display:flex;justify-content:space-between;align-items:flex-start;gap:8px}
+  .cat{font:700 10.5px Inter;letter-spacing:.06em;text-transform:uppercase;color:var(--amber-deep);background:#fbeee0;padding:4px 9px;border-radius:6px}
+  .anchor-flag{font:700 10px Inter;letter-spacing:.05em;text-transform:uppercase;background:var(--ink);color:#fff;padding:4px 8px;border-radius:6px}
+  .card h3{font-family:var(--hand);font-weight:600;font-size:17.5px;line-height:1.25}
+  .rhythm{font-size:12.5px;color:var(--sky);font-weight:600}
+  .cadence{display:inline-block;font:700 9.5px Inter;letter-spacing:.05em;text-transform:uppercase;background:#e7eef2;color:var(--sky);padding:2px 7px;border-radius:5px;margin-right:2px;vertical-align:1px}
+  .desc{font-size:13.5px;color:var(--ink-soft);flex-grow:1}
+  .foot{display:flex;flex-direction:column;gap:6px;border-top:1px solid var(--line);padding-top:10px;font-size:12.5px;color:var(--ink-soft)}
+  /* ring colour is positional — innermost ring is always the greenest,
+     whatever the rings mean in this place. No per-place CSS. */
+  .ringtag{display:inline-flex;gap:6px;align-items:center;font-weight:600}
+  .ringtag.r0{color:var(--good)}
+  .ringtag.r1{color:var(--warn)}
+  .ringtag.r2{color:var(--red)}
+  /* "How to read this board" explainer + distance ring-map (ported from the
+     frozen board). Rings are positional: inner=green(0), middle=amber(1), outer=red(2). */
+  .readnote{background:var(--card);border:2px solid var(--line);border-radius:var(--radius);padding:13px 16px;margin:18px 0 4px;font-size:13px;color:var(--ink-soft);line-height:1.5}
+  .readnote b{color:var(--ink)}
+  .readnote .anchor-flag{margin-right:2px}
+  .ringmap-wrap{display:flex;justify-content:center;margin:14px 0 2px}
+  .ringmap-wrap[hidden]{display:none} /* explicit display beats [hidden]'s UA rule — restore it, so circles show only with a board */
+  .mockflag{display:inline-block;font:700 10px Inter;letter-spacing:.05em;text-transform:uppercase;background:var(--sky);color:#fff;padding:4px 9px;border-radius:6px} /* same blue mock pill as Snap */
+  .ringmap{display:block;width:100%;max-width:500px;height:auto}
+  .ringmap .ring{stroke-width:1.5;fill-opacity:.06;transition:opacity .2s,fill-opacity .2s,stroke-width .2s}
+  .ringmap .key{transition:opacity .2s}
+  .ringmap .off{opacity:.25}
+  .ringmap .ring.on{stroke-width:3;fill-opacity:.16}
+  .ringmap .rr0{stroke:var(--good);fill:var(--good)}
+  .ringmap .rr1{stroke:var(--warn);fill:var(--warn)}
+  .ringmap .rr2{stroke:var(--red);fill:var(--red)}
+  .ringmap .kk0 circle{fill:var(--good)}
+  .ringmap .kk1 circle{fill:var(--warn)}
+  .ringmap .kk2 circle{fill:var(--red)}
+  .ringmap text{font:500 11px Inter;fill:var(--ink-soft)}
+  .ringmap .venue-dot{fill:var(--ink)}
+  .src{font-size:11.5px;color:var(--ink-soft);opacity:.85}
+  .src b{color:var(--ink)}
+  /* a sketch card is deliberately the weaker object on the page: dashed,
+     flatter, no source line — because there is no source yet. */
+  .card.sketch{border-style:dashed;background:#fdfaf4;box-shadow:none}
+  .stamp{font:700 10px Inter;letter-spacing:.05em;text-transform:uppercase;color:var(--warn)}
+
+  .count{font-size:13px;color:var(--ink-soft);margin-top:6px}
+  footer{border-top:2px solid var(--line);padding:22px 0 44px;color:var(--ink-soft);font-size:13px;margin-top:34px}
+  footer b{color:var(--ink)}
+  footer a{color:var(--amber-deep);font-weight:600;text-decoration:none}
+
+  /* ===== chat matcher (ported from the hackathon board, place-agnostic) ===== */
+  .matcher{background:var(--card);border:2px solid var(--line);border-radius:var(--radius);padding:18px 20px;box-shadow:var(--shadow);margin-top:24px}
+  .matcher h3{font-family:var(--hand);font-weight:600;font-size:18px;margin-bottom:3px}
+  .matcher .hint{font-size:13px;color:var(--ink-soft);margin-bottom:12px}
+  .matcher-row{display:flex;gap:10px;flex-wrap:wrap}
+  .matcher-row input{flex:1 1 260px;font:500 14.5px Inter;color:var(--ink);background:var(--paper);border:2px solid var(--line);border-radius:999px;padding:11px 18px;outline:none;transition:border-color .15s}
+  .matcher-row input:focus{border-color:var(--amber)}
+  .matcher-row input:disabled,.matcher-row button:disabled{opacity:.65;cursor:default}
+  .matcher-row button{font:600 14px Inter;background:var(--amber-deep);color:#fff;border:none;border-radius:999px;padding:11px 20px;cursor:pointer;display:inline-flex;gap:8px;align-items:center}
+  .matcher-row button:hover:not(:disabled){background:var(--amber)}
+  .spinner{width:15px;height:15px;border:2px solid rgba(255,255,255,.4);border-top-color:#fff;border-radius:50%;animation:spin .9s linear infinite;display:inline-block}
+  @keyframes spin{to{transform:rotate(360deg)}}
+  .loading-card{display:flex;gap:16px;align-items:center;background:var(--card);border:2px solid var(--amber);border-radius:var(--radius);padding:20px 22px;box-shadow:var(--shadow);margin:16px 0}
+  .spinner-lg{flex:0 0 auto;width:28px;height:28px;border:3px solid var(--line);border-top-color:var(--amber-deep);border-radius:50%;animation:spin .9s linear infinite}
+  .loading-h{font-family:var(--hand);font-weight:600;font-size:19px;margin-bottom:3px}
+  .loading-sub{font-size:14px;color:var(--ink-soft);overflow-wrap:break-word}
+  .matcher-status{font-size:13.5px;color:var(--ink-soft);margin-top:10px;overflow-wrap:break-word}
+  .matcher-status.err{color:var(--red)}
+  .unmet-note{border:2px dashed var(--amber-deep);background:#fbeee0;border-radius:var(--radius);padding:15px 18px;margin-top:14px;font-size:14px}
+  .unmet-note b{color:var(--amber-deep)}
+  .unmet-note a{color:var(--amber-deep);font-weight:600}
+  .card,.matcher-status{overflow-wrap:break-word}
+
+  /* ===== promoted ask + journey path render (merged from journey.html) ===== */
+  .matcher{border-color:var(--amber);margin-top:20px}
+  .matcher h3{font-size:20px}
+  .journey-head{font-family:var(--hand);font-weight:600;font-size:19px;line-height:1.3;margin-bottom:12px;overflow-wrap:break-word}
+  .journey-head .said{color:var(--amber-deep)}
+  .path{list-style:none;display:flex;flex-direction:column;gap:10px;margin-top:4px}
+  .step{position:relative;display:flex;gap:12px;align-items:flex-start;background:var(--card);
+    border:1.5px solid var(--line);border-left:5px solid var(--tone,var(--line));border-radius:10px;padding:11px 14px}
+  .step + .step::before{content:"";position:absolute;left:25px;top:-10px;width:2px;height:10px;background:var(--line)}
+  .step-num{flex:0 0 auto;width:24px;height:24px;border-radius:50%;background:var(--tone,var(--ink-soft));color:#fff;
+    font:700 12.5px Inter;display:flex;align-items:center;justify-content:center;margin-top:2px}
+  .step-body{min-width:0;display:flex;flex-direction:column;gap:4px}
+  .step-type{font:700 10.5px Inter;letter-spacing:.07em;text-transform:uppercase;color:var(--tone,var(--ink-soft))}
+  .step-title{font-family:var(--hand);font-weight:600;font-size:17px;line-height:1.25}
+  .step-reason{font-size:14px;color:var(--ink);overflow-wrap:break-word}
+  .step-more{font:600 12.5px Inter;color:var(--sky);background:none;border:none;padding:0;cursor:pointer;text-align:left;align-self:flex-start}
+  .step-more:hover{color:var(--amber-deep)}
+  .step-rhythm{font-size:12.5px;color:var(--sky);font-weight:600;overflow-wrap:break-word}
+  .step-find{font:600 12.5px Inter;color:var(--amber-deep);text-decoration:none;align-self:flex-start}
+  .step-find:hover{text-decoration:underline}
+  .step-find.found{color:var(--good)}   /* live web search dug up a real page — distinct from the amber search fallback */
+  .enrich-note{color:var(--good);font-weight:600}
+  .t-activity{--tone:var(--amber)} .t-course{--tone:var(--sky)} .t-volunteering{--tone:var(--good)}
+  .t-stall{--tone:var(--warn)} .t-space{--tone:var(--warn)} .t-grant{--tone:var(--red)}
+  .step-unmet{border:1.5px dashed var(--amber-deep);border-left-width:5px;background:#fbeee0}
+  .step-unmet .step-num{background:var(--amber-deep)}
+  .step-unmet .step-type{color:var(--amber-deep)}
+  .step-unmet a{color:var(--amber-deep);font-weight:600}
+  @media (prefers-reduced-motion:no-preference){
+    .path .step{animation:rise .4s cubic-bezier(.22,.7,.3,1) both}
+    .path .step:nth-child(2){animation-delay:.07s}
+    .path .step:nth-child(3){animation-delay:.14s}
+    .path .step:nth-child(4){animation-delay:.21s}
+    .path .step:nth-child(5){animation-delay:.28s}
+    .path .step:nth-child(6){animation-delay:.35s}
+  }
+  @keyframes rise{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
+
+  /* ===== Step Out product nav (site v3) ===== */
+  html{scroll-padding-top:64px}
+  .sonav{position:sticky;top:0;z-index:200;display:flex;gap:14px;align-items:center;background:var(--paper);border-bottom:1px solid var(--line);padding:10px 20px;overflow-x:auto;scrollbar-width:none}
+  .sonav::-webkit-scrollbar{display:none}
+  .sonav-brand{font-family:var(--hand);font-weight:600;font-size:17px;color:var(--ink);text-decoration:none;flex:0 0 auto}
+  .sonav-links{display:flex;gap:8px;flex:0 0 auto;align-items:center}
+  .sonav-links a{font:600 13px Inter,system-ui,sans-serif;color:var(--ink-soft);text-decoration:none;border:2px solid var(--line);background:var(--card);border-radius:999px;padding:6px 13px;white-space:nowrap;flex:0 0 auto;transition:all .15s}
+  .sonav-links a:hover{border-color:var(--amber)}
+  .sonav-links a[aria-current="page"]{background:var(--ink);border-color:var(--ink);color:#fff}
+  .sonav-links a.sonav-hack{border-style:dashed;border-color:var(--amber);margin-left:10px}
+  .sonav-links a.sonav-hack[aria-current="page"]{background:var(--amber-deep);border-color:var(--amber-deep);color:#fff}
+  .demobar{background:var(--card);border-bottom:2px dashed var(--amber);padding:7px 14px;text-align:center;font:600 13px Inter;color:var(--ink-soft)}
+  .demobar a{color:var(--amber-deep)}
+  /* example mode: a prominent sticky bar so the way back to the real flow is always in view */
+  .examplebar{position:sticky;top:0;z-index:50;display:flex;flex-wrap:wrap;gap:12px;align-items:center;justify-content:center;background:#fbeee0;border-bottom:2px solid var(--amber-deep);padding:9px 16px;font:600 13.5px Inter;color:var(--ink)}
+  .examplebtn{display:inline-flex;align-items:center;font:700 13px Inter;color:#fff;background:var(--amber-deep);border-radius:999px;padding:7px 15px;text-decoration:none}
+  .examplebtn:hover{background:var(--amber)}
+  .limitbar{background:#fbeee0;border-bottom:2px solid var(--amber-deep);padding:9px 14px;text-align:center;font:600 13px Inter;color:var(--amber-deep)}
+
+  /* ===== match-vs-path result: ranked grid (default) ⇄ ordered path (toggle) ===== */
+  .matches-head{display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap;margin:30px 0 4px}
+  .matches-head h2.section{margin:0}
+  .view-toggle{display:inline-flex;border:2px solid var(--line);border-radius:999px;overflow:hidden;background:var(--card)}
+  .view-toggle button{font:600 12.5px Inter;color:var(--ink-soft);background:none;border:none;padding:7px 14px;cursor:pointer;white-space:nowrap}
+  .view-toggle button + button{border-left:2px solid var(--line)}
+  .view-toggle button[aria-pressed="true"]{background:var(--ink);color:#fff}
+  .match-reason{background:#fbeee0;border-left:4px solid var(--amber);border-radius:0 8px 8px 0;padding:9px 12px;font-size:13.5px;color:var(--ink);line-height:1.45;overflow-wrap:break-word}
+  #matchesGrid[hidden],#pathWrap[hidden]{display:none}
+  /* empty-board example CTA — the same prominent door as the index */
+  .example-cta{display:inline-flex;align-items:center;margin-top:9px;font:700 13px Inter;color:var(--amber-deep);background:var(--card);border:2px solid var(--amber);border-radius:999px;padding:8px 15px;text-decoration:none}
+  .example-cta:hover{border-color:var(--amber-deep)}
+  #formHint{margin-top:2px}
+  /* anchor explainer — short bulleted list (distance is the ring legend's job now) */
+  .rn-lead{margin:0}
+  .rn-list{margin:6px 0 0;padding-left:20px}
+  .rn-list li{margin:2px 0}
+  /* a compact distance circle beside its chips — the chips ARE the legend now */
+  .filterzone{display:flex;gap:22px;align-items:center;flex-wrap:wrap;margin:22px 0 6px}
+  .filterzone .ringmap-wrap{margin:0;flex:0 0 auto;justify-content:flex-start;width:172px;max-width:100%}
+  .filterzone .ringmap{width:100%;max-width:172px}
+  .filterzone .controls{flex:0 1 auto;flex-direction:column;align-items:flex-start;gap:8px;margin:0}
+  .filterzone .readnote{flex:1 1 300px;margin:0;align-self:center} /* fills the space right of the chips */
+  .chip .cdot{width:9px;height:9px;border-radius:50%;display:inline-block;flex:0 0 auto}
+  .chip .cdot.r0{background:var(--good)} .chip .cdot.r1{background:var(--warn)} .chip .cdot.r2{background:var(--red)}
+  .chip[aria-pressed="true"] .cdot{box-shadow:0 0 0 2px #fff}
+  .ctl-div{height:1px;width:100%;background:var(--line);margin:3px 0}
+  /* the toggle helper — changes with the selected view */
+  .view-help{font-size:12.5px;color:var(--ink-soft);line-height:1.5;margin:-8px 0 16px;max-width:74ch}
+  .view-help b{color:var(--ink)}
+  /* "picked for you" panel — visually distinct from the plain board below */
+  .results-panel{background:#fbeee0;border:2px solid var(--amber);border-radius:var(--radius);padding:20px 22px 22px;margin-top:24px}
+  .results-panel .section{margin-top:0}
+  /* match cards: ranked + amber-accented so they read as picks, not catalogue */
+  .card.matchcard{position:relative;border-left:5px solid var(--amber-deep);overflow:visible}
+  .card .rank{position:absolute;top:-11px;left:-11px;width:26px;height:26px;border-radius:50%;background:var(--amber-deep);color:#fff;font:700 13px Inter;display:flex;align-items:center;justify-content:center;box-shadow:0 2px 5px rgba(36,50,68,.2)}
+  .view-toggle button .ti{margin-right:5px}
+  /* ===== editorial contact footer (ported from kashifnazir.com) ===== */
+  footer.sofoot{border-top:3px solid var(--amber-deep);padding:clamp(1.6rem,3.5vw,2.3rem) 0 1.8rem;margin-top:10px;color:var(--ink-soft)}
+  .sofoot__inner{display:flex;justify-content:space-between;align-items:flex-start;gap:22px;flex-wrap:wrap;margin-bottom:1.4rem}
+  .sofoot__name{font-family:var(--hand);font-weight:600;font-size:1.3rem;letter-spacing:-.02em;color:var(--ink);text-decoration:none;display:block;margin-bottom:3px;transition:color .2s}
+  .sofoot__name:hover{color:var(--amber-deep)}
+  .sofoot__role{font:400 13px Inter,system-ui,sans-serif;color:var(--ink-soft);margin:0}
+  .sofoot__right{display:flex;align-items:center;gap:16px;flex-wrap:wrap}
+  .sofoot__site{font:600 11.5px Inter,system-ui,sans-serif;letter-spacing:.07em;text-transform:uppercase;color:var(--ink-soft);text-decoration:none;transition:color .2s}
+  .sofoot__site:hover{color:var(--amber-deep)}
+  .sofoot__icons{display:flex;gap:15px}
+  .sofoot__icons a{color:var(--ink-soft);transition:color .2s;display:inline-flex}
+  .sofoot__icons a:hover{color:var(--amber-deep)}
+  .sofoot__icons svg{width:20px;height:20px}
+  .sofoot__bottom{padding-top:1.3rem;border-top:1px solid var(--line);font-size:12px;letter-spacing:.03em;color:var(--ink-soft);opacity:.75}
+</style>
+</head>
+<body>
+<nav class="sonav" aria-label="Step Out">
+  <a class="sonav-brand" href="index.html">🚪 Step&nbsp;Out</a>
+  <div class="sonav-links">
+    <a href="board.html" aria-current="page">Board</a>
+    <a href="snap.html">Snap</a>
+    <a href="about.html">About</a>    <a class="sonav-hack" href="hackathon.html">🏁 Hackathon</a>
+  </div>
+</nav>
+<div class="wrap">
+  <header>
+    <div class="kicker">The board · sketch your own place, verified by locals</div>
+    <h1 id="title"></h1>
+    <p class="sub" id="strapline"></p>
+    <div class="loc" id="centerLabel"></div>
+    <p class="disclaimer" id="disclaimer">Example boards are real, hand-checked data — a source on every card, nothing invented.</p>
+  </header>
+
+  <button class="pbtn sketchbtn" id="sketchBtn" aria-pressed="false" style="display:none" hidden></button>
+  <form class="sketchform" id="sketchForm">
+    <input id="sketchInput" type="text" autocomplete="off" maxlength="80"
+           placeholder="a town, village or neighbourhood — anywhere in the UK"
+           aria-label="A town, village or neighbourhood — anywhere in the UK">
+    <button type="submit" id="sketchGo">Build it live →</button>
+  </form>
+  <p class="disclaimer" id="formHint"><a class="example-cta" href="board.html?example=1">👀 New here? See an example board first →</a></p>
+  <p class="sketchstatus" id="sketchStatus" hidden></p>
+
+  <section id="sketchLoading" hidden aria-live="polite">
+    <div class="loading-card">
+      <span class="spinner-lg"></span>
+      <div>
+        <h2 class="loading-h" id="loadingH"></h2>
+        <p class="loading-sub" id="loadingSub"></p>
+      </div>
+    </div>
+  </section>
+
+  <p class="glabel" id="mineLabel" hidden>Your boards — switch between the places you've built</p>
+  <div class="places" id="placeBtns"></div>
+
+  <!-- ============ chat matcher — works over whichever board is active ============ -->
+  <section class="matcher" id="matcherWrap">
+    <h3>💬 What do you want to do?</h3>
+    <p class="hint">Tell it like you'd tell a neighbour — <i>"I want to do some running"</i>, <i>"I just moved here and don't know anyone"</i>. Any language. You'll get the local things that <b>fit</b> — and if it's a project like <i>"sell my cakes"</i>, a <b>step-by-step path</b> too.</p>
+    <form class="matcher-row" id="matcherForm">
+      <input type="text" id="matcherInput" autocomplete="off" placeholder="e.g. I want to do some running">
+      <button type="submit" id="matcherBtn"><span id="matcherBtnLabel">Show me what fits</span></button>
+    </form>
+    <p class="matcher-status" id="matcherStatus" hidden></p>
+  </section>
+
+  <section id="matchesSection" class="results-panel" hidden>
+    <div class="matches-head">
+      <h2 class="section" id="matchesH">✨ Your matches</h2>
+      <div class="view-toggle" id="viewToggle" role="group" aria-label="Show results as">
+        <button type="button" id="viewGrid" aria-pressed="true"><span class="ti">📋</span>Things that fit</button>
+        <button type="button" id="viewPath" aria-pressed="false"><span class="ti">🧭</span>Step-by-step path</button>
+      </div>
+    </div>
+    <p class="section-note" id="matchesNote">Picked for what you told us — each card says why.</p>
+    <p class="view-help" id="viewHelp"><b>Things that fit</b> — a ranked shortlist. <b>Step-by-step path</b> — the same list as an ordered plan, for a project like starting or selling something.</p>
+    <div id="matchesGrid" class="grid"></div>
+    <div id="pathWrap" hidden></div>
+    <div class="unmet-note" id="unmetNote" hidden></div>
+  </section>
+  <!-- ============ /chat matcher ============ -->
+
+  <div class="filterzone" id="filterzone">
+    <div class="ringmap-wrap" id="ringmapWrap" hidden>
+      <svg class="ringmap" viewBox="0 0 176 176" role="img" aria-label="Distance rings around you — inner is closest, outer is furthest; the filter chips are the legend">
+        <circle class="ring rr2" id="ring2" cx="88" cy="86" r="80"/>
+        <circle class="ring rr1" id="ring1" cx="88" cy="86" r="52"/>
+        <circle class="ring rr0" id="ring0" cx="88" cy="86" r="25"/>
+        <circle class="venue-dot" cx="88" cy="86" r="4"/>
+        <text x="88" y="105" text-anchor="middle" style="fill:var(--ink);font-weight:600">you</text>
+      </svg>
+    </div>
+    <div class="controls" id="controls"></div>
+    <div class="readnote" id="readNote" hidden>
+      <p class="rn-lead"><span class="anchor-flag">⚓ Anchor</span> — the easiest kind of thing to start on your own:</p>
+      <ul class="rn-list">
+        <li>runs on a regular schedule — a weekly group, a drop-in, a volunteering slot</li>
+        <li>gives you a simple reason to turn up</li>
+        <li>no commitment, no needing to know anyone first</li>
+      </ul>
+    </div>
+  </div>
+  <p class="count" id="count"></p>
+
+  <h2 class="section" id="secH"></h2>
+  <p class="section-note" id="secNote"></p>
+  <div class="grid" id="grid"></div>
+
+  <section id="invisibleWrap" hidden>
+    <h2 class="section">🕳️ What it can't see — and neither can a newcomer</h2>
+    <p class="section-note">These exist, but they're locked in closed channels or personal contacts.</p>
+    <div class="invisible" style="background:#fbeee0;border:2px dashed var(--amber);border-radius:var(--radius);padding:20px;margin-top:16px">
+      <h3 style="font-family:var(--hand);font-size:18px;margin-bottom:8px">The invisible layer</h3>
+      <p style="font-size:14px;color:var(--ink-soft);margin-bottom:10px;max-width:66ch">None of this shows up in any search. A newcomer only finds it by already knowing someone — which is exactly the gap Step Out is built to close, by letting residents add what the web can't reach.</p>
+      <ul id="invisibleList" style="list-style:none;display:flex;flex-direction:column;gap:8px;font-size:14px"></ul>
+    </div>
+  </section>
+
+  <footer class="sofoot">
+    <div class="sofoot__inner">
+      <div>
+        <a href="https://kashifnazir.com" target="_blank" rel="noopener" class="sofoot__name">Kashif Nazir</a>
+        <p class="sofoot__role">Senior Technical Architect</p>
+      </div>
+      <div class="sofoot__right">
+        <a href="https://kashifnazir.com" target="_blank" rel="noopener" class="sofoot__site">kashifnazir.com</a>
+        <div class="sofoot__icons">
+          <a href="https://github.com/thekashifnazir" target="_blank" rel="noopener noreferrer me" title="GitHub" aria-label="GitHub"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 19c-5 1.5-5-2.5-7-3m14 6v-3.87a3.37 3.37 0 0 0-.94-2.61c3.14-.35 6.44-1.54 6.44-7A5.44 5.44 0 0 0 20 4.77 5.07 5.07 0 0 0 19.91 1S18.73.65 16 2.48a13.38 13.38 0 0 0-7 0C6.27.65 5.09 1 5.09 1A5.07 5.07 0 0 0 5 4.77a5.44 5.44 0 0 0-1.5 3.78c0 5.42 3.3 6.61 6.44 7A3.37 3.37 0 0 0 9 18.13V22"/></svg></a>
+          <a href="https://www.linkedin.com/in/kashifnazir" target="_blank" rel="noopener noreferrer me" title="LinkedIn" aria-label="LinkedIn"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 8a6 6 0 0 1 6 6v7h-4v-7a2 2 0 0 0-2-2 2 2 0 0 0-2 2v7h-4v-7a6 6 0 0 1 6-6z"/><rect x="2" y="9" width="4" height="12"/><circle cx="4" cy="4" r="2"/></svg></a>
+          <a href="mailto:contact@kashifnazir.com" title="Email" aria-label="Email"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 21" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg></a>
+        </div>
+      </div>
+    </div>
+    <div class="sofoot__bottom">© 2026 Kashif Nazir</div>
+  </footer>
+</div>
+
+<script>
+/* =====================================================================
+   PLACE_CONFIG — the two real example boards (hand-built at the
+   hackathon, data verbatim; tier/reach renamed to ring). See the frozen
+   originals via hackathon.html.
+   ===================================================================== */
+/* No preset example boards on the live site — the make-your-own sketch IS the
+   product here. Full hand-built worked boards (Somers Town, Foxton) live in
+   the frozen hackathon wing (see hackathon.html). */
+const PLACE_CONFIG={};
+
+const MODE_COPY={
+  tiers:{tag:"dense · zoom chooses the circle",filterLabel:"How local is local?",countSuffix:""},
+  reach:{tag:"rural · reachability + the invisible layer",filterLabel:"I can get there by:",countSuffix:" · plus an invisible layer no search can reach"},
+  sketch:{tag:"live sketch · unverified",filterLabel:"How far is that?",countSuffix:" · none of it verified yet"}
+};
+const SECTION_COPY={
+  board:{h:"✅ What Step Out can see (public sources)",
+         note:"Aggregated and normalised from the open web — the layer the app can see automatically."},
+  sketch:{h:"✨ Your starter board",
+          note:"AI's best guess at what's around you, from public knowledge — not checked yet. On the full app, locals confirm each one and the real board grows from here."}
+};
+
+/* ============================== the engine ==============================
+   ONE render path for every board — example, sketch, or your saved one. */
+const SKETCH_ID="sketch";
+let placeId=null, filter="wide"; // null = the make-your-own invite; "wide" = widest ring = show everything (no separate "Everything" chip)
+let sketchCfg=null;
+const $=id=>document.getElementById(id);
+
+/* Saved boards: every successful live sketch is KEPT (not overwritten), so you can
+   build several places and switch between them (Robyn: replacing the old board
+   isn't helpful). Persisted per-origin. so_myboard still holds the CURRENT board
+   for cross-page compat — journey.html + snap.html read it. */
+const BOARDS_KEY="so_boards", MYBOARD_KEY="so_myboard";
+const boardId=name=>"mine:"+String(name||"board").toLowerCase().replace(/[^a-z0-9]+/g,"-").replace(/^-|-$/g,"").slice(0,40);
+function loadBoards(){
+  try{
+    const raw=localStorage.getItem(BOARDS_KEY);
+    if(raw){const a=JSON.parse(raw);if(Array.isArray(a))return a.filter(b=>b&&b.name&&Array.isArray(b.data));}
+    const legacy=localStorage.getItem(MYBOARD_KEY); // migrate the old single-board key
+    if(legacy){const c=JSON.parse(legacy);if(c&&c.name){c.id=boardId(c.name);return[c];}}
+  }catch(_){}
+  return [];
+}
+let savedBoards=loadBoards();
+function saveBoard(cfg){
+  cfg.id=boardId(cfg.name);
+  const i=savedBoards.findIndex(b=>b.id===cfg.id);
+  if(i>=0)savedBoards[i]=cfg; else savedBoards.unshift(cfg); // newest first
+  try{localStorage.setItem(BOARDS_KEY,JSON.stringify(savedBoards));localStorage.setItem(MYBOARD_KEY,JSON.stringify(cfg));}catch(_){}
+}
+const findBoard=id=>savedBoards.find(b=>b.id===id)||null;
+
+const cfgFor=id=>id===SKETCH_ID?sketchCfg:(id&&id.indexOf&&id.indexOf("mine:")===0?findBoard(id):PLACE_CONFIG[id]);
+const boardEntries=cfg=>cfg.data.filter(e=>!e.invisible);
+const ringIdx=(cfg,key)=>cfg.rings.findIndex(r=>r.key===key);
+
+/* Place buttons: one per saved board, so you can switch between the places you've
+   built. Shared by the invite and active-board renders. */
+function renderPlaceButtons(){
+  const pb=$('placeBtns');pb.innerHTML='';
+  savedBoards.forEach(bd=>{
+    const b=document.createElement('button');
+    b.className='pbtn minebtn';
+    b.setAttribute('aria-pressed',String(placeId===bd.id));
+    b.appendChild(document.createTextNode("⭐ "+bd.name)); // model/user text → text node, never innerHTML
+    const sm=document.createElement('small');
+    sm.textContent="sketched, unverified";
+    b.appendChild(sm);
+    b.addEventListener('click',()=>{switchPlace(bd.id);});
+    pb.appendChild(b);
+  });
+  $('mineLabel').hidden=!savedBoards.length;
+  $('sketchBtn').setAttribute('aria-pressed',String(placeId===SKETCH_ID));
+}
+
+/* Distance ring-map (ported from the frozen board): 3 concentric circles keyed to
+   the board's rings; highlights the ring matching the active distance filter. */
+function renderRingmap(cfg){
+  const rings=cfg.rings||[];
+  const active=rings.findIndex(r=>r.key===filter); // -1 when the filter is "anchor" (not a distance ring)
+  for(let i=0;i<3;i++){
+    const ringEl=$('ring'+i);
+    if(!ringEl)continue;
+    if(active<0){ringEl.classList.remove('on','off');continue;} // anchors-only → neutral rings, no reach highlight
+    const on=i<=active; // cumulative: the selected ring AND everything closer is "in reach"
+    ringEl.classList.toggle('on',on);
+    ringEl.classList.toggle('off',!on);
+  }
+}
+
+/* The make-your-own invite: what a bare load shows when no board is built. */
+function renderInvite(){
+  placeId=null;
+  $('title').textContent="Build your board";
+  $('strapline').textContent="Every place is full of ways in — most of them are invisible. Type yours to see a first sketch."; // short value line; the practical instruction lives at the search bar
+  $('centerLabel').textContent="";$('centerLabel').style.display="none"; // empty .loc pill otherwise shows
+  $('disclaimer').hidden=true;   // the header "example boards" note no longer applies
+  $('formHint').hidden=false;    // the "nothing here yet — type a place" guidance sits AT the search bar
+  $('matchesSection').hidden=true;$('unmetNote').hidden=true;
+  $('ringmapWrap').hidden=true;$('readNote').hidden=true;$('invisibleWrap').hidden=true;
+  $('controls').innerHTML='';
+  $('secH').textContent="";$('secNote').textContent=""; // no far-away, tiny "nothing here yet" — the hint at the bar covers it
+  $('grid').innerHTML='';
+  $('matcherWrap').hidden=true;   // the matcher works over a board — build one first
+  renderPlaceButtons();
+}
+
+function renderPlace(){
+  const cfg=cfgFor(placeId);
+  if(!cfg)return renderInvite();
+  $('matcherWrap').hidden=false;
+  $('formHint').hidden=true;   // the "nothing here yet" hint only belongs on the empty state
+  const isSketch=cfg.sketch===true;
+  renderPlaceButtons();
+
+  $('title').textContent=isSketch?`What Step Out sketched for ${cfg.name}`:`What Step Out shows in ${cfg.name}`;
+  $('strapline').textContent=cfg.strapline;
+  $('centerLabel').textContent=cfg.center_label;$('centerLabel').style.display="";
+  $('disclaimer').hidden=isSketch;
+
+  const sc=SECTION_COPY[isSketch?"sketch":"board"];
+  $('secH').textContent=sc.h;
+  $('secNote').textContent=sc.note+(isSketch&&cfg.caveat?" "+cfg.caveat:""); // fold the model's own confidence note in (banner removed)
+  $('ringmapWrap').hidden=false;$('readNote').hidden=false;
+
+  const ctl=$('controls');ctl.innerHTML='';
+  const lbl=document.createElement('span');
+  lbl.className='lbl';lbl.textContent=MODE_COPY[cfg.mode].filterLabel;
+  ctl.appendChild(lbl);
+  // distance chips: each carries its ring colour dot, so the chips ARE the legend
+  // (the diagram no longer repeats the labels). The widest ring = everything, so
+  // there is no separate "Everything" chip.
+  cfg.rings.forEach((r,i)=>{
+    const b=document.createElement('button');
+    b.className='chip';
+    const dot=document.createElement('span');dot.className='cdot r'+i;b.appendChild(dot);
+    b.appendChild(document.createTextNode(`${r.emoji} ${r.label}`));
+    b.setAttribute('aria-pressed',String(filter===r.key));
+    b.addEventListener('click',()=>{filter=r.key;renderPlace();});
+    ctl.appendChild(b);
+  });
+  ctl.appendChild(Object.assign(document.createElement('div'),{className:'ctl-div'})); // Anchors is a TYPE filter, not a distance ring
+  const ab=document.createElement('button');
+  ab.className='chip';ab.textContent='⚓ Anchors only';
+  ab.setAttribute('aria-pressed',String(filter==='anchor'));
+  ab.addEventListener('click',()=>{filter='anchor';renderPlace();});
+  ctl.appendChild(ab);
+  renderRingmap(cfg);
+
+  const inv=cfg.data.filter(e=>e.invisible);
+  $('invisibleWrap').hidden=!(cfg.mode==="reach"&&inv.length);
+  $('invisibleList').innerHTML=inv.map(e=>`<li><span style="color:var(--red);font-weight:700">?</span> <span>${e.t}</span></li>`).join('');
+
+  renderBoard(cfg);
+}
+
+function switchPlace(id){
+  placeId=id;filter="wide"; // reset to the widest ring = everything shown
+  $('matchesSection').hidden=true;$('unmetNote').hidden=true;
+  renderPlace();
+}
+
+const isUrl=s=>/^https?:\/\//i.test(String(s||"").trim());
+/* Honest "find this" link — never a fabricated official page. For a card with
+   no verified web source (a live sketch, or a Snap extraction), it opens a web
+   search for the entry on this board's place, so the card is still actionable.
+   Built with DOM APIs so user/model text can't inject markup into the href. */
+function findLink(title,place){
+  const a=document.createElement('a');
+  a.className='step-find';
+  a.href='https://www.google.com/search?q='+encodeURIComponent((title+' '+(place||'')).trim());
+  a.target='_blank';a.rel='noopener noreferrer';
+  a.textContent='🔎 Find this locally →';
+  a.dataset.findTitle=title;   // raw title → live web-search enrichment upgrades this link where a real page is found
+  return a;
+}
+/* A verified/official page → open it directly (green). Same shape the live
+   enrichment upgrades a find-link into, so a card can start out already-linked. */
+function realLink(url){
+  const a=document.createElement('a');
+  a.className='step-find found';
+  a.href=encodeURI(url);a.target='_blank';a.rel='noopener noreferrer';
+  a.title=url;a.textContent='🔗 Its page →';
+  return a;
+}
+/* A web search for a generic channel — a noticeboard, a WhatsApp/Facebook group,
+   word of mouth — lands nowhere useful, so those get NO link (Robyn's point).
+   Matches the TITLE only (what actually gets searched), not incidental desc text. */
+const NO_SEARCH=/notice ?board|whats ?app|facebook (group|page)|word of mouth|closed group|private group|whatsapp/i;
+const shouldFindLink=entry=>!NO_SEARCH.test((entry&&entry.t)||"");
+/* One link per card/step: a real page if we have one (verified src or live
+   enrichment), else an honest local search where a search could actually reach
+   something, else nothing. */
+function cardLink(entry,place){
+  const url=entry&&isUrl(entry.url)?entry.url:(entry&&isUrl(entry.src)?entry.src:null);
+  if(url)return realLink(url);
+  if(!shouldFindLink(entry))return null;
+  const a=findLink(entry.t,place);
+  const found=enrichCache.get(normT(entry.t)); // already verified live this session → start green so it survives board filter re-renders
+  if(found){a.href=encodeURI(found);a.textContent='🔗 Its page →';a.title=found;a.classList.add('found');}
+  return a;
+}
+
+function provenanceFor(cfg,it){
+  if(it.snap)return '<span class="stamp">SNAPPED — from a photo/PDF, pending re-verification</span>';
+  if(cfg.sketch)return '<span class="stamp">SKETCH — unverified, from public knowledge</span>';
+  if(isUrl(it.src))return `<span class="src">source: <a href="${encodeURI(it.src)}" target="_blank" rel="noopener noreferrer">${esc(it.src)}</a></span>`;
+  return `<span class="src">source: <b>${esc(it.src)}</b></span>`;
+}
+
+/* A scannable cadence chip from the free-text rhythm (Robyn: is it weekly / monthly /
+   one-off?). Keyword match — falls back to "Varies" rather than guessing. */
+function cadenceOf(r){
+  r=String(r||"").toLowerCase();
+  if(/one[- ]?off|\bonce\b|single event/.test(r))return"One-off";
+  if(/\bdaily\b|every day|open daily/.test(r))return"Daily";
+  if(/week(ly|s)?\b|fortnight/.test(r))return"Weekly";
+  if(/month(ly|s)?\b/.test(r))return"Monthly";
+  if(/term(ly)?\b|term ?time/.test(r))return"Termly";
+  if(/annual|yearly|a year|seasonal|rolling/.test(r))return"Seasonal";
+  return"Varies";
+}
+function renderBoard(cfg){
+  const all=boardEntries(cfg);
+  const items=all.filter(it=>{
+    if(filter==="all")return true;
+    if(filter==="anchor")return it.anchor;
+    return ringIdx(cfg,it.ring)<=ringIdx(cfg,filter);
+  });
+  const grid=$('grid');grid.innerHTML='';
+  items.forEach(it=>{
+    const ri=ringIdx(cfg,it.ring),r=cfg.rings[ri]||cfg.rings[0];
+    const c=document.createElement('article');
+    c.className='card'+(it.anchor?' anchor':'')+(it.pdf?' frompdf':'')+(cfg.sketch?' sketch':'');
+    c.innerHTML=`<div class="top"><span class="cat">${esc(it.cat)}</span>${it.anchor?'<span class="anchor-flag" title="Anchor — recurring, role-giving, low-pressure: the easiest kind of thing to join on your own.">⚓ Anchor</span>':''}</div>
+      <h3>${esc(it.t)}</h3>
+      <p class="rhythm"><span class="cadence">${cadenceOf(it.rhythm)}</span> ↻ ${esc(it.rhythm)}</p>
+      <p class="desc">${esc(it.desc)}</p>
+      <div class="foot"><span class="ringtag r${ri<0?0:ri}">${r.emoji} ${r.desc}</span>${provenanceFor(cfg,it)}</div>`;
+    if(cfg.sketch||it.snap){const l=cardLink(it,cfg.name);if(l)c.querySelector('.foot').appendChild(l);} // real link if we have one, honest search where it helps, else none
+    grid.appendChild(c);
+  });
+  const r0=cfg.rings[0];
+  const inner=all.filter(i=>i.ring===r0.key).length;
+  const anchors=all.filter(i=>i.anchor).length;
+  const pdfN=all.filter(i=>i.pdf).length;
+  $('count').textContent=`${items.length} shown · ${all.length} found in total · ${inner} ${r0.emoji} ${r0.label} · ${anchors} anchors${pdfN?` · ${pdfN} from PDF newsletters`:""}${MODE_COPY[cfg.mode].countSuffix}`;
+}
+
+/* ==================== live sketch → your board ==================== */
+const MODEL="claude-opus-5";
+const TYPES=["activity","volunteering","course","stall","space","grant","request"];
+const SKETCH_RINGS_KEYS=["near","middle","wide"];
+const SKETCH_RINGS={
+  dense:[
+    {key:"near",label:"Within a few minutes",emoji:"🏘️",desc:"Right here — minutes on foot"},
+    {key:"middle",label:"Within a short walk",emoji:"🚶",desc:"A short walk away"},
+    {key:"wide",label:"The whole area",emoji:"🗺️",desc:"Wider area — across the borough"}
+  ],
+  rural:[
+    {key:"near",label:"Within the village",emoji:"🚶",desc:"In the village, on foot"},
+    {key:"middle",label:"Within a short hop",emoji:"🚲",desc:"Cycle or a short hop to the nearest town"},
+    {key:"wide",label:"Anywhere reachable",emoji:"🚗",desc:"Hard without a car, bus or a lift"}
+  ],
+  mixed:[
+    {key:"near",label:"Within a walk",emoji:"🚶",desc:"In the town, on foot"},
+    {key:"middle",label:"Out to the edge of town",emoji:"🚲",desc:"Edge of town — a long walk or a cycle"},
+    {key:"wide",label:"The whole area",emoji:"🚗",desc:"Villages around — car, bus or a lift"}
+  ]
+};
+
+const SKETCH_SCHEMA={
+  type:"object",
+  properties:{
+    place_kind:{type:"string",enum:["dense","rural","mixed"]},
+    strapline:{type:"string"},
+    entries:{type:"array",items:{type:"object",
+      properties:{
+        cat:{type:"string"},
+        t:{type:"string"},
+        rhythm:{type:"string"},
+        desc:{type:"string"},
+        ring:{type:"string",enum:SKETCH_RINGS_KEYS},
+        type:{type:"string",enum:TYPES},
+        anchor:{type:"boolean"}
+      },
+      required:["cat","t","rhythm","desc","ring","type","anchor"],
+      additionalProperties:false}},
+    caveat:{type:"string"}
+  },
+  required:["place_kind","strapline","entries","caveat"],additionalProperties:false
+};
+
+function buildSketchPrompt(place){
+  return `You are the cold-start engine for "Step Out", an app that surfaces local community opportunity and matches people to it.
+
+Someone has typed a UK place name: "${place}". Sketch what community opportunity you genuinely believe exists there, from public knowledge. This sketch will be shown to the user clearly labelled as unverified, so honesty matters far more than richness.
+
+Rules:
+- Only include things you genuinely believe exist. Prefer generic institutional descriptors — "the parish church", "the village hall's programme", "the library", "the local parkrun", "the district council's volunteering routes" — over specific proper names. Name a specific group, church, hall or business ONLY when you are highly confident it exists in THIS place AND you are spelling its name correctly; if there is any doubt, name the KIND of thing instead. A guessed or misspelt proper name reads as a factual error and destroys trust — an honest general entry always beats an invented specific one.
+- NEVER invent street addresses, times, dates, prices, websites or contact details. Put your best honest guess at the pattern in "rhythm" and tell the reader to confirm it — e.g. "weekly, likely an evening — check locally", "monthly, term-time — check locally".
+- Never include a person's name, phone number or email. Roles only ("hall bookings volunteer").
+- place_kind: "dense" for a city neighbourhood or suburb, "rural" for a village, hamlet or very small settlement, "mixed" for a market town or small town with villages around it.
+- ring: "near" = in the place itself; "middle" = a walk or short cycle away; "wide" = needs a car, bus or a lift. In a dense place these are walking circles; in a rural one they are how you actually get there.
+- type: one of ${TYPES.join(" / ")}. Step Out turns this board into a first-steps PATH for whatever a person wants to do — somewhere to JOIN (activity), something to LEARN (course), a way to GIVE BACK (volunteering), a place to TRY & SELL (a market/stall or a bookable space), and the MONEY to start (a grant or community fund). So the board must span these, not return only activities. Where you genuinely believe each exists for a place this size, include at least one course or adult-learning route, one volunteering route, one market or bookable public space (a library, village hall or community room counts as a space), and one funding source (parish, district and community grants almost always exist somewhere). If one honestly does not exist for a place this small, leave it out and let the caveat say so — never invent one to fill the set.
+- anchor: true ONLY for recurring, role-giving, low-pressure things a newcomer could simply keep turning up to (a weekly drop-in, a regular volunteering slot). A course, a one-off or seasonal event, a market, a bookable space and a grant are NOT anchors. On a typical board only a minority — roughly two to four — should be anchors; do not flag most of the board.
+- Give 6 to 10 DISTINCT entries — no two should be the same opportunity in different words. For a place with an active community (a town, a suburb or a large village) aim for the fuller end and make sure the five kinds below are all represented; for a genuinely tiny place, fewer honest entries beats padding.
+- strapline: one or two warm sentences about what this place is like for someone new, in the second person where it helps.
+- caveat: ONE honest sentence about how confident you actually are for a place this size — say plainly if it is small enough that most of what happens there is not on the public web at all.
+- Respond in English.`;
+}
+
+/* Key is NEVER a literal in this file (the repo is pushed). */
+const getKey=()=>{
+  // NEVER prompts. Live-without-proxy is a developer path: pre-store a key in
+  // localStorage ("so_key") from the console. Absent key -> the caller's
+  // friendly canned/fallback path. Visitors are never asked for anything.
+  const k=localStorage.getItem("so_key");
+  return (k&&k!=="null"&&k!=="")?k:null;
+};
+
+const QS=new URLSearchParams(location.search);
+const HOSTED=location.protocol!=="file:"&&!["localhost","127.0.0.1"].includes(location.hostname);
+// Rate-limited proxy (worker/ in the private repo): injected into published
+// copies. With a proxy, hosted pages are LIVE by default — no key, capped
+// daily. Hosted WITHOUT a proxy falls back to demo mode so no visitor ever
+// hits a key prompt. localhost/file:// keep the live-with-own-key default.
+const PROXY="https://step-out-proxy.kash-553.workers.dev";
+// DEV ONLY: on localhost, point the board at the deployed worker via
+// ?proxy=<worker-url> (one-off) or localStorage "so_proxy" (sticky — set once,
+// every plain reload is then live). Lets the live path be tested without baking
+// a URL or storing a key. Gated to localhost so a crafted ?proxy= link can never
+// redirect a published visitor's requests; on the published site PROXY is
+// injected (truthy) and this override is ignored entirely.
+const DEV_LOCAL=["localhost","127.0.0.1"].includes(location.hostname);
+const PROXY_URL=PROXY||(DEV_LOCAL?(QS.get("proxy")||localStorage.getItem("so_proxy")||""):"");
+const EXAMPLE=QS.get("example")==="1"; // one-click canned example board (front-door "see an example")
+const MOCK=QS.has("mock")?QS.get("mock")==="1":(EXAMPLE||!PROXY_URL); // example is ALWAYS canned — no live calls
+const MOCKFAIL=QS.get("mock")==="fail";
+if(EXAMPLE){ // prominent, action-carrying bar: clearly a canned example, with the way back to the real thing
+  const bar=document.createElement("div");bar.className="examplebar";
+  const t=document.createElement("span");t.textContent="👀 This is a canned example — demo content, not live.";
+  const a=document.createElement("a");a.href="board.html";a.className="examplebtn";a.textContent="← Build your own real board";
+  bar.appendChild(t);bar.appendChild(a);
+  const mount=()=>{
+    document.body.prepend(bar);
+    const nav=document.querySelector(".sonav"); if(nav)nav.style.position="static"; // let the example bar own the sticky top slot so "back to real" always shows
+  };
+  document.body?mount():document.addEventListener("DOMContentLoaded",mount);
+}else if(MOCK&&!QS.has("mock")){ // banner ⟺ canned, on any host — never show a sample result unflagged
+  const demoEl=document.createElement("div");demoEl.className="demobar";
+  demoEl.innerHTML='demo mode — sample responses, no API calls';
+  const demoMount=()=>document.body.prepend(demoEl);
+  document.body?demoMount():document.addEventListener("DOMContentLoaded",demoMount);
+}
+
+/* Live budget exhausted (worker returns 429): flip to canned data for the rest
+   of the session, with an explicit persistent banner — never a silent sample. */
+let rateLimited=false;
+const isCanned=()=>MOCK||rateLimited;
+function showLimitBanner(){
+  if(document.querySelector(".limitbar"))return; // once per session
+  const el=document.createElement("div");el.className="limitbar";
+  el.textContent="⚠️ Live search has used up today's shared budget — you're seeing canned sample data now. Live returns tomorrow.";
+  const mount=()=>document.body.prepend(el);
+  document.body?mount():document.addEventListener("DOMContentLoaded",mount);
+}
+
+/* Canned sketch for demo mode — written the way the model is instructed to
+   write: real institutions, no invented times, "check locally" rhythms. */
+const MOCK_SKETCH={
+  place_kind:"mixed",
+  strapline:"Market Harborough is a Leicestershire market town with a compact centre, a canal basin and a ring of villages around it. Enough happens in town to fill a week — but most of it reaches you through a noticeboard, not a search box.",
+  entries:[
+    {cat:"Market",t:"Market Harborough town market",rhythm:"Regular market days in the town square — check locally for which days",desc:"The town's oldest rhythm and the easiest place to simply be among people without joining anything. Stalls and days change with the season, so check before you set out.",ring:"near",type:"stall",anchor:true},
+    {cat:"Library",t:"Market Harborough Library",rhythm:"Open most days; groups and children's sessions run to a termly timetable — check locally",desc:"Leicestershire libraries host reading groups, digital-help drop-ins and children's sessions. Free, warm, and nobody asks why you're there.",ring:"near",type:"space",anchor:true},
+    {cat:"Outdoors",t:"Welland Park and the Grand Union Canal towpath",rhythm:"Open daily; parkrun-style and volunteer conservation groups tend to run weekend mornings — check locally",desc:"The park and the canal basin are where the town walks. Good first territory if turning up to a group feels like too much yet.",ring:"near",type:"activity",anchor:false},
+    {cat:"Music / drama",t:"Amateur theatre and choral groups in the town",rhythm:"Weekly rehearsals in term time, likely evenings — check locally",desc:"A town this size reliably supports a theatre group and at least one choir. Rehearsal-based, role-giving and forgiving of beginners: the classic anchor.",ring:"near",type:"activity",anchor:true},
+    {cat:"Give back",t:"Harborough District volunteering",rhythm:"Ongoing — the district council and local voluntary-action service list roles year-round",desc:"District-wide volunteering routes, from community transport to befriending. Most give you a role and a reason to come back weekly.",ring:"middle",type:"volunteering",anchor:true},
+    {cat:"Learning",t:"Adult learning and skills courses",rhythm:"Termly enrolment — check locally for what's running",desc:"Leicestershire adult-learning provision runs short courses in and around the town, some free depending on circumstances. A practical route if you want to earn as well as belong.",ring:"middle",type:"course",anchor:false},
+    {cat:"Village halls",t:"Village hall programmes in the surrounding villages",rhythm:"Weekly and monthly clubs — each hall keeps its own noticeboard, check locally",desc:"The villages around each run their own halls with WI, history and craft groups. Reachable by bike or a lift; often invisible online.",ring:"wide",type:"activity",anchor:true},
+    {cat:"Funding",t:"Parish and district community grants",rhythm:"Rolling or annual rounds — check with the parish council",desc:"Small pots exist at parish and district level for residents who want to start something. Amounts and deadlines vary; the parish clerk is the honest first ask.",ring:"wide",type:"grant",anchor:false}
+  ],
+  caveat:"For a town this size I'm fairly confident about the institutions — the market, library, park, council volunteering — but much less so about which specific clubs are still running and when, and the smaller village groups are almost entirely absent from the public web."
+};
+
+const delay=ms=>new Promise(r=>setTimeout(r,ms));
+const esc=s=>String(s).replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+
+function cleanSketchEntries(raw){
+  if(!Array.isArray(raw))return[];
+  // store RAW text — escaping happens at innerHTML render points, and the raw
+  // title is what the matcher round-trips against (findEntry). Escaping here
+  // put "&amp;" into titles, which the model decoded back to "&", breaking the
+  // match — and textContent renders in the path would show the literal entity.
+  const s=v=>(typeof v==="string"?v.trim():"");
+  return raw.filter(e=>e&&typeof e.t==="string"&&e.t.trim()).slice(0,12).map(e=>({
+    cat:s(e.cat)||"Community",
+    t:s(e.t),
+    rhythm:s(e.rhythm)||"check locally",
+    desc:s(e.desc),
+    ring:SKETCH_RINGS_KEYS.includes(e.ring)?e.ring:"middle",
+    type:TYPES.includes(e.type)?e.type:"activity",
+    anchor:e.anchor===true
+  }));
+}
+
+function sketchToConfig(place,raw){
+  const kind=SKETCH_RINGS[raw.place_kind]?raw.place_kind:"mixed";
+  return {
+    id:SKETCH_ID,
+    name:place,
+    sketch:true,
+    mode:"sketch",
+    strapline:typeof raw.strapline==="string"?raw.strapline:"",
+    rings:SKETCH_RINGS[kind],
+    center_label:`✨ ${place} · sketched live · nothing here has been verified`,
+    caveat:typeof raw.caveat==="string"?raw.caveat:"",
+    data:cleanSketchEntries(raw.entries)
+  };
+}
+
+// Pull a JSON value out of a text block that may wrap it in prose AND/OR ```
+// fences — web search responses do this ("Based on my searches… ```json […]```")
+// even when told to return JSON only, so a plain fence-strip is not enough.
+function extractJson(s){
+  const str=String(s);
+  const fence=str.match(/```(?:json)?\s*([\s\S]*?)```/i);
+  const body=fence?fence[1]:str;                                   // prefer a fenced block if present
+  const first=Math.min(...["[","{"].map(c=>{const i=body.indexOf(c);return i<0?Infinity:i;}));
+  const last=Math.max(body.lastIndexOf("]"),body.lastIndexOf("}"));
+  if(first===Infinity||last<first)throw new Error("no json in text");
+  return JSON.parse(body.slice(first,last+1));                     // outermost array/object, prose stripped
+}
+// Raw POST → the full message object. opts.beta sets an anthropic-beta header
+// (the worker forwards it); opts.timeout overrides the 30s abort.
+async function postModel(body,opts={}){
+  const key=PROXY_URL?"proxy":getKey();
+  if(!key)throw Object.assign(new Error("no key"),{friendly:"Couldn't reach the model here — the published site routes this through a keyless proxy, so building your board works there."});
+  const ac=new AbortController();
+  const timer=setTimeout(()=>ac.abort(),opts.timeout||30000);
+  try{
+    const headers={
+      "content-type":"application/json",
+      "x-api-key":key,
+      "anthropic-version":"2023-06-01",
+      "anthropic-dangerous-direct-browser-access":"true"
+    };
+    if(opts.beta)headers["anthropic-beta"]=opts.beta;
+    const res=await fetch(PROXY_URL||"https://api.anthropic.com/v1/messages",{
+      method:"POST",headers,signal:ac.signal,body:JSON.stringify(body)
+    });
+    if(!res.ok){
+      if(res.status===429){const e=new Error("rate limited");e.rateLimited=true;throw e;} // daily/per-IP budget spent
+      throw new Error("HTTP "+res.status);
+    }
+    return await res.json();
+  }finally{clearTimeout(timer);}
+}
+// opts.lastText: web search inserts web_search_tool_use/_result blocks, so the
+// answer is the LAST text block, not the first. opts.jsonFromText: without a
+// json_schema (web search forbids one) the model wraps JSON in prose/fences.
+async function callModel(body,opts={}){
+  const msg=await postModel(body,opts);
+  if(msg.stop_reason!=="end_turn")throw new Error("stop_reason: "+msg.stop_reason);
+  const texts=(msg.content||[]).filter(b=>b.type==="text");
+  const block=opts.lastText?texts[texts.length-1]:texts[0];
+  if(!block)throw new Error("no text block");
+  return opts.jsonFromText?extractJson(block.text):JSON.parse(block.text);
+}
+
+async function fetchSketch(place){
+  if(isCanned()){await delay(650);return structuredClone(MOCK_SKETCH);}
+  return callModel({
+    model:MODEL,
+    max_tokens:4096,
+    output_config:{format:{type:"json_schema",schema:SKETCH_SCHEMA},effort:"low"},
+    messages:[{role:"user",content:buildSketchPrompt(place)}]
+  });
+}
+
+/* ---- sketch wiring ---- */
+const sketchForm=$('sketchForm'),sketchInput=$('sketchInput'),
+      sketchGo=$('sketchGo'),sketchStatus=$('sketchStatus');
+let sketching=false;
+
+function setSketchStatus(text,isErr,mock){
+  sketchStatus.hidden=!text&&!mock;
+  sketchStatus.classList.toggle('err',!!isErr);
+  sketchStatus.textContent='';
+  if(mock){ // blue "mock mode" pill, same identity as Snap
+    const p=document.createElement('span');
+    p.className='mockflag';p.textContent='mock mode — canned sketch, no API call';
+    sketchStatus.appendChild(p);
+    if(text)sketchStatus.appendChild(document.createTextNode(' '));
+  }
+  if(text)sketchStatus.appendChild(document.createTextNode(text)); // text nodes only — place name is user text
+}
+
+$('sketchBtn').addEventListener('click',()=>{
+  sketchForm.hidden=false;
+  if(sketchCfg){switchPlace(SKETCH_ID);}
+  sketchInput.focus();
+});
+
+/* Prominent loading state for the sketch — a cold build is a ~10s live call, so
+   without this the page reads as "nothing happened" then a board appears. Staged
+   messages make the wait legible; cleared/hidden the moment the board lands. */
+let loadTimers=[];
+function clearLoadTimers(){loadTimers.forEach(clearTimeout);loadTimers=[];}
+function showSketchLoading(place){
+  clearLoadTimers();
+  setSketchStatus("",false);
+  $('matchesSection').hidden=true;                 // drop any old path while rebuilding
+  $('secH').textContent="";$('secNote').textContent=""; // hide the "nothing here yet" invite copy
+  $('loadingH').textContent=`Building your board for ${place}…`;
+  const stages=[
+    `Reading what's publicly known about ${place}…`,
+    "Looking for activities, courses, volunteering, markets and funding…",
+    "Sorting everything by how far it is…",
+    "Almost there — writing it up…"
+  ];
+  $('loadingSub').textContent=stages[0];
+  stages.slice(1).forEach((msg,i)=>loadTimers.push(setTimeout(()=>{$('loadingSub').textContent=msg;},(i+1)*3500)));
+  $('sketchLoading').hidden=false;
+}
+function hideSketchLoading(){clearLoadTimers();$('sketchLoading').hidden=true;}
+/* Re-use the big loading card for the SECOND live phase: the board has rendered,
+   now we're out searching the area for a real link to each card. Keeps it obvious
+   that work is still happening after the initial build (the enrichment takes longer
+   than the sketch). enrichBoard hides it when the links are in. */
+function showEnrichLoading(place){
+  clearLoadTimers();
+  $('loadingH').textContent=`Finding real links around ${place}…`;
+  const stages=[
+    `Your board is below — now digging ${place}'s real pages.`,
+    "Searching council, community and venue sites for each card…",
+    "Fetching each page to check it loads and is on-topic…",
+    "Almost there — confirming which links are real…"
+  ];
+  $('loadingSub').textContent=stages[0];
+  stages.slice(1).forEach((msg,i)=>loadTimers.push(setTimeout(()=>{$('loadingSub').textContent=msg;},(i+1)*4500)));
+  $('sketchLoading').hidden=false;
+}
+
+async function runSketch(place){
+  if(sketching)return;
+  sketching=true;sketchGo.disabled=true;sketchInput.disabled=true;
+  showSketchLoading(place);
+  try{
+    const raw=await fetchSketch(place);
+    const cfg=sketchToConfig(isCanned()?"Market Harborough":place,raw);
+    if(!cfg.data.length)throw Object.assign(new Error("empty"),{friendly:`Nothing came back for “${place}” — which is itself the honest answer for some places.`});
+    sketchCfg=cfg;
+    if(!isCanned())saveBoard(structuredClone(cfg)); // keep it alongside any earlier boards (never save a canned sample)
+    switchPlace(SKETCH_ID);
+    if(rateLimited){hideSketchLoading();setSketchStatus("Live board-building is used up for today — a canned sample board for now. Live returns tomorrow.",false,true);}
+    else if(MOCK){hideSketchLoading();setSketchStatus("On the live site this is one real model call.",false,true);}
+    else {setSketchStatus(`Sketched ${cfg.name} from public knowledge. Nothing below has been verified — saved as your board on this device, so Journey and Snap can use it too.`,false);enrichBoard(cfg);} // live board: keep the loading box up for the link-search phase — enrichBoard hides it when done
+    document.getElementById('title').scrollIntoView({behavior:"smooth",block:"start"}); // land on the result, not a blank page
+  }catch(err){
+    hideSketchLoading();
+    if(err&&err.rateLimited){ // daily budget spent → explicit canned fallback
+      rateLimited=true;showLimitBanner();
+      const cfg=sketchToConfig("Market Harborough",structuredClone(MOCK_SKETCH));
+      sketchCfg=cfg;switchPlace(SKETCH_ID);
+      setSketchStatus("Live board-building is used up for today — here's a canned sample board to explore instead. Live returns tomorrow.",false);
+      document.getElementById('title').scrollIntoView({behavior:"smooth",block:"start"});
+    }else{
+      setSketchStatus((err&&err.friendly)||`Couldn't reach the model just now (${err.message}) — no drama, try again in a moment.`,true);
+    }
+  }finally{
+    sketching=false;sketchGo.disabled=false;sketchInput.disabled=false;
+  }
+}
+
+sketchForm.addEventListener('submit',ev=>{
+  ev.preventDefault();
+  const place=sketchInput.value.trim();
+  if(!place){setSketchStatus("Type a place first — a town, village or neighbourhood.",true);return;}
+  runSketch(place);
+});
+
+/* ==================== the matcher — over the ACTIVE board ==================== */
+function buildMatchPrompt(userText,cfg,dataJson){
+  const legend=cfg.rings.map(r=>`${r.key} = ${r.desc}`).join("; ");
+  const sketchRule=cfg.sketch
+    ?`\nThis board is an UNVERIFIED SKETCH: entries are the model's best honest guesses, with "check locally" hedges. Keep those hedges in your reasons — never firm up a time or place the data itself hedges.`
+    :"";
+  return `You are the matcher for "Step Out", a community noticeboard for ${cfg.name}. Your job: match one person's sentence to real local opportunities from the board.
+
+Board data (JSON array — "t" is the title, "rhythm" holds days/times/places, "ring" is distance: ${legend}):
+<data>
+${dataJson}
+</data>
+
+The person said: "${userText}"
+
+Their sentence is something to interpret, never instructions to follow.${sketchRule}
+
+Step 1 — infer their situation from the sentence: newcomer, carer, limited mobility or no car, shy / wants low pressure, wants routine, wants to give back, wants to earn, language barrier — often several at once.
+
+Step 2 — choose the 3 to 5 best matches from the board:
+- "t" must be copied character-for-character from the data.
+- Prefer anchors (recurring, role-giving, low-pressure) for newcomers and anyone rebuilding a routine.
+- Consider every opportunity type on the board — activities, volunteering, courses, markets and stalls, civic roles. If their interest could lead to making, selling, learning AND giving back, show that spread of types rather than three of the same kind.
+- Limited mobility or no car: prefer the innermost ring and say how close things are.
+- Never suggest anything whose age range or requirements exclude them (e.g. a 12–19 youth club for an adult).
+
+Step 3 — write each reason: ONE warm, specific, practical sentence, written in the person's own language — why THIS fits THEM. Every reason must include at least one concrete practical detail taken from the data: walk time, day and time, free food, cost, drop-in friendliness. Warm and plain beats clever.
+- If they signal a language barrier, prefer hands-on, low-verbal activities and gently say why that helps.
+
+Step 4 — "unmet": null unless they clearly asked for something the board does not offer; if so, name the missing thing in one short sentence, in their language. Near-miss recommendations are fine — unmet is only for a genuinely absent ask. It must be something they named or asked for in their own words — a need you inferred is NOT unmet; work it into a reason instead. Stating a difficulty ("I look after my mum full time") describes their situation — it is not an ask, and must not fire unmet.`;
+}
+
+const MATCH_SCHEMA={
+  type:"object",
+  properties:{
+    matches:{type:"array",items:{type:"object",
+      properties:{t:{type:"string"},reason:{type:"string"}},
+      required:["t","reason"],additionalProperties:false}},
+    unmet:{type:["string","null"]}
+  },
+  required:["matches","unmet"],additionalProperties:false
+};
+
+/* Canned cross-type path for demo mode — titles copied from MOCK_SKETCH
+   (Market Harborough) so findEntry resolves every one. Written for a
+   "sell my cakes"-shaped ask so the demo shows a full join→money path. */
+const MOCK_MATCH={matches:[
+  {t:"Amateur theatre and choral groups in the town",reason:"A weekly, role-giving anchor where you'll meet people fast — the easiest way to stop being new before you start selling to neighbours (rehearsals likely evenings, check locally)."},
+  {t:"Adult learning and skills courses",reason:"Termly short courses in town, some free depending on circumstances — the practical route to the food-hygiene certificate a cake stall is asked for first."},
+  {t:"Harborough District volunteering",reason:"A weekly role at a community café or event gets you known by the people who run the rooms and markets — the fastest way in for a small trader."},
+  {t:"Market Harborough town market",reason:"The town's oldest rhythm and the obvious first place to test-sell a few cakes — stalls and days shift with the season, so check before you set out."},
+  {t:"Market Harborough Library",reason:"A free, warm space that hosts drop-ins and small sessions — worth asking about as a low-cost place to run a first taster or pop-up."},
+  {t:"Parish and district community grants",reason:"Small pots at parish and district level for residents starting something — the parish clerk is the honest first ask about amounts and deadlines."}
+],unmet:null};
+
+const matcherForm=$('matcherForm'),matcherInput=$('matcherInput'),
+      matcherBtn=$('matcherBtn'),matcherBtnLabel=$('matcherBtnLabel'),
+      matcherStatus=$('matcherStatus'),matchesSection=$('matchesSection'),
+      matchesNote=$('matchesNote'),pathWrap=$('pathWrap'),unmetNote=$('unmetNote'),
+      matchesGrid=$('matchesGrid');
+
+if(MOCK){ // canned: a one-click example ask so the matcher demonstrates itself (Robyn: no example here)
+  const ex=document.createElement('button');
+  ex.type='button';ex.id='matcherDemo';
+  ex.textContent='▶ Try an example — “I want to sell my cakes”';
+  ex.style.cssText='margin-top:10px;font:600 13px Inter,system-ui,sans-serif;color:var(--amber-deep);background:var(--card);border:2px solid var(--amber);border-radius:999px;padding:8px 15px;cursor:pointer';
+  ex.addEventListener('click',()=>{matcherInput.value='I want to sell my cakes';matcherForm.requestSubmit();});
+  matcherForm.insertAdjacentElement('afterend',ex);
+}
+
+if(MOCK&&!EXAMPLE){ // demo mode: relabel the build button so it doesn't promise a live call (the top demo banner already flags canned mode)
+  sketchGo.textContent="Build a sample board →";
+}
+
+function setBusy(b){
+  matcherInput.disabled=b;matcherBtn.disabled=b;
+  matcherBtnLabel.innerHTML=b?'<span class="spinner"></span> Finding your matches…':'Show me what fits';
+}
+function setStatus(text,isErr){
+  matcherStatus.hidden=!text;
+  matcherStatus.textContent=text||'';
+  matcherStatus.classList.toggle('err',!!isErr);
+}
+
+async function getMatches(sentence,cfg){
+  if(MOCKFAIL){await delay(450);throw new Error("mock failure");}
+  if(isCanned()){await delay(450);return structuredClone(MOCK_MATCH);}
+  return callModel({
+    model:MODEL,
+    max_tokens:2048,
+    output_config:{format:{type:"json_schema",schema:MATCH_SCHEMA},effort:"low"},
+    messages:[{role:"user",content:buildMatchPrompt(sentence,cfg,JSON.stringify(boardEntries(cfg)))}]
+  });
+}
+
+const decodeEnt=s=>String(s).replace(/&amp;/g,"&").replace(/&lt;/g,"<").replace(/&gt;/g,">").replace(/&quot;/g,'"');
+const normT=s=>decodeEnt(s).trim().toLowerCase().replace(/\s+/g," ");
+function findEntry(cfg,t){
+  const pool=boardEntries(cfg);
+  const nt=normT(t);
+  // exact, then normalised (handles entity-decoding + case + whitespace differences)
+  let e=pool.find(d=>d.t===t)||pool.find(d=>normT(d.t)===nt);
+  // Haiku sometimes truncates/paraphrases a long title — accept a containment
+  // match only when exactly ONE board entry matches, so we never mis-assign.
+  if(!e){
+    const cands=pool.filter(d=>{const nd=normT(d.t);return nd.includes(nt)||nt.includes(nd);});
+    if(cands.length===1)e=cands[0];
+  }
+  return e||null;
+}
+
+/* ===== the journey path render — join → learn → give back → try&sell → money.
+   A specific ask becomes an ordered path across the board's types, not a flat
+   grid. `space` folds into the "a place to do it" step; anything else falls to
+   the end as its best-fit step so nothing is dropped. ===== */
+const JOURNEY_STEPS=[
+  {type:"activity",    label:"Join",             cls:"t-activity"},
+  {type:"course",      label:"Learn",            cls:"t-course"},
+  {type:"volunteering",label:"Give back",        cls:"t-volunteering"},
+  {type:"stall",       label:"Try & sell",       cls:"t-stall"},
+  {type:"space",       label:"A place to do it", cls:"t-space"},
+  {type:"grant",       label:"Money to start",   cls:"t-grant"}
+];
+const STEP_BY_TYPE=new Map(JOURNEY_STEPS.map(s=>[s.type,s]));
+const stepFor=entry=>STEP_BY_TYPE.get(entry.type)||STEP_BY_TYPE.get("activity");
+
+const REASON_CHARS=140;
+function trimReason(s){
+  s=String(s).trim();
+  if(s.length<=REASON_CHARS)return s;
+  return s.slice(0,REASON_CHARS).replace(/\s+\S*$/,'')+"…";
+}
+
+function buildStep(n,step,entry,reason,place){
+  const li=document.createElement('li');
+  li.className='step '+step.cls;
+  li.innerHTML=`<span class="step-num">${n}</span>
+    <div class="step-body">
+      <span class="step-type"></span>
+      <h3 class="step-title"></h3>
+      <p class="step-reason"></p>
+      <p class="step-rhythm"></p>
+    </div>`;
+  li.querySelector('.step-type').textContent=step.label;
+  li.querySelector('.step-title').textContent=entry.t;      // entry title (from data) → textContent
+  li.querySelector('.step-rhythm').textContent="↻ "+entry.rhythm;
+  const reasonEl=li.querySelector('.step-reason');
+  const short=trimReason(reason);
+  reasonEl.textContent="💬 "+short;                         // model text → textContent, never innerHTML
+  if(short!==String(reason).trim()){
+    const more=document.createElement('button');
+    more.type='button';more.className='step-more';more.textContent='more';
+    let open=false;
+    more.addEventListener('click',()=>{
+      open=!open;
+      reasonEl.textContent="💬 "+(open?String(reason).trim():short);
+      more.textContent=open?'less':'more';
+    });
+    li.querySelector('.step-body').insertBefore(more,li.querySelector('.step-rhythm'));
+  }
+  {const l=cardLink(entry,place);if(l)li.querySelector('.step-body').appendChild(l);} // real link if we have one, honest search where it helps, else none
+  return li;
+}
+
+/* ===== live web-search enrichment — the product's core: dig real local data
+   streams for each step's actual page, don't decorate. Runs LIVE only, once,
+   AFTER the path renders. Best-effort: any failure keeps the honest search
+   links exactly as they are, so the feature can only add, never subtract. ===== */
+function buildEnrichPrompt(place,titles){
+  return `You have a web_search tool AND a web_fetch tool. For each local community opportunity listed below in ${place} (UK), find its real, official, WORKING page — the group's own site, the venue's page, the council/parish/library listing, or an official community directory entry.
+
+Opportunities (each "t" is copied from a community board — copy it back to me character-for-character):
+${titles.map(t=>"- "+t).join("\n")}
+
+Method — do this for each opportunity:
+1. web_search to find candidate pages. Dig the actual local data streams, not a generic search page.
+2. web_fetch the best candidate URL to CONFIRM it actually loads and its content is genuinely about THIS opportunity in ${place}. If the fetch fails, 404s, redirects to something unrelated, or the page is about something else, discard it and try the next candidate — or give up on that entry.
+3. Only keep a URL you successfully fetched and confirmed is a live, on-topic page. Return the exact URL you fetched (after any redirect).
+
+Then return ONLY a JSON array and nothing else — no prose, no markdown fences:
+[{"t":"<title copied exactly>","url":"<the exact URL you fetched and confirmed>"}]
+
+Hard rules — a wrong or dead link is FAR worse than none:
+- NEVER return a URL you did not successfully web_fetch. No guessing, no reconstructing a path from a domain.
+- The fetched page must be genuinely ABOUT this opportunity — a council's generic /jobs page is NOT a match for a grants opportunity.
+- Prefer the organisation's own official/first-party page over a directory or aggregator.
+- If no candidate fetched cleanly and on-topic, OMIT that entry. An empty array is a perfectly good answer.`;
+}
+
+/* One enrichment call = a server-side web_search + web_fetch loop. Haiku uses the
+   basic tool variants (web_fetch_20250910 needs the web-fetch beta, forwarded by
+   the worker). The loop can pause (server tool-iteration cap) — resume up to 3
+   times, appending the assistant turn, then read the final end_turn text block. */
+/* Enrichment dispatch: through the worker's /enrich endpoint when live via the
+   proxy (Brave search + Haiku fetch-verify + shared KV cache — cheap, and links
+   are cached across all visitors); the old direct Anthropic web_search+web_fetch
+   call is the dev-only fallback for a raw key with no proxy. Both return the same
+   [{t,url}] shape, so fillEnrichCache doesn't care which ran. */
+async function fetchEnrichment(place,titles){
+  return PROXY_URL?fetchEnrichmentViaProxy(place,titles):fetchEnrichmentDirect(place,titles);
+}
+async function fetchEnrichmentViaProxy(place,titles){
+  const ac=new AbortController();
+  const timer=setTimeout(()=>ac.abort(),80000);          // Brave (sequential) + fetch-verify can run ~20-30s
+  try{
+    const res=await fetch(PROXY_URL.replace(/\/+$/,"")+"/enrich",{
+      method:"POST",headers:{"content-type":"application/json"},signal:ac.signal,
+      body:JSON.stringify({place,titles})
+    });
+    if(!res.ok){if(res.status===429){const e=new Error("rate limited");e.rateLimited=true;throw e;} throw new Error("HTTP "+res.status);}
+    const data=await res.json();
+    return Array.isArray(data)?data:[];                   // best-effort: unexpected shape → no upgrades, keep the search links
+  }finally{clearTimeout(timer);}
+}
+/* dev-only fallback (no proxy, raw key): the original Anthropic web_search +
+   web_fetch loop. Costs the per-search fee; the /enrich path above replaces it. */
+async function fetchEnrichmentDirect(place,titles){
+  const messages=[{role:"user",content:buildEnrichPrompt(place,titles)}];
+  // Budget the tool uses to the work: ~one search + one fetch per title, so a
+  // small path (2 titles) stays cheap while a full board (8+ cards) gets enough
+  // budget to verify most cards instead of running dry after 5 (the parkrun-missed
+  // lesson). Capped at 10 each so a single board build can't run away; the worker's
+  // DAILY_CAP is the hard backstop on total spend.
+  const cap=Math.min(10,Math.max(6,titles.length+2));
+  for(let i=0;i<4;i++){
+    const msg=await postModel({
+      model:MODEL,
+      max_tokens:1500,
+      tools:[
+        {type:"web_search_20250305",name:"web_search",max_uses:cap},
+        {type:"web_fetch_20250910",name:"web_fetch",max_uses:cap}
+      ],
+      messages
+    },{beta:"web-fetch-2025-09-10",timeout:70000});
+    if(msg.stop_reason==="pause_turn"){messages.push({role:"assistant",content:msg.content});continue;} // resume the server loop
+    if(msg.stop_reason!=="end_turn")throw new Error("stop: "+msg.stop_reason); // 429s already thrown by postModel as HTTP errors
+    const texts=(msg.content||[]).filter(b=>b.type==="text");
+    if(!texts.length)throw new Error("no text block");
+    return extractJson(texts[texts.length-1].text);
+  }
+  throw new Error("too many pauses");
+}
+
+/* Shared verified-link cache: normT(title) → real URL. Populated by whichever of
+   board/path enrichment runs first, so a title is web-fetched at most once per
+   session — enriching the board makes the path's overlapping steps free rather
+   than doubling the cost, and lets a filter re-render (which rebuilds the cards)
+   start already-linked (see cardLink). */
+const enrichCache=new Map();
+
+/* Fetch verified pages for the titles we don't already have, seeding enrichCache.
+   Fires at most ONE enrichment call; no call at all if every title is cached.
+   Serialized through enrichChain so a board build and a racing ask can't both
+   compute "need" off the same stale cache and double-fetch the same title — the
+   second waits for the first to write, then sees a cache hit. Keeps the "at most
+   once per session" cost guarantee under that race. */
+let enrichChain=Promise.resolve();
+async function fillEnrichCache(place,titles){
+  const run=async()=>{
+    const need=titles.filter(t=>!enrichCache.has(normT(t))); // recomputed AFTER any prior fill has written the cache
+    if(!need.length)return;
+    const arr=await fetchEnrichment(place,need);
+    if(!Array.isArray(arr))throw new Error("bad shape");
+    arr.forEach(o=>{if(o&&isUrl(o.url))enrichCache.set(normT(o.t),String(o.url).trim());});
+  };
+  const p=enrichChain.then(run,run); // run next regardless of whether the prior fill resolved or rejected
+  enrichChain=p.catch(()=>{});       // keep the chain alive past a failure; the caller still sees p reject
+  return p;
+}
+
+/* Upgrade honest a.step-find search links in place to the verified pages now in
+   enrichCache. Skips links already upgraded and titles with no verified page.
+   Returns how many it upgraded this call. */
+function upgradeFindLinks(links){
+  let n=0;
+  links.forEach(a=>{
+    const url=enrichCache.get(normT(a.dataset.findTitle||""));
+    if(!url||a.classList.contains('found'))return;
+    a.href=encodeURI(url);
+    a.textContent='🔗 Its page →';
+    a.title=url;
+    a.classList.add('found');
+    n++;
+  });
+  return n;
+}
+
+let enrichSeq=0;
+async function enrichPath(cfg,journey){
+  const seq=++enrichSeq;
+  const links=[...journey.querySelectorAll('a.step-find')];
+  const titles=[...new Set(links.map(a=>a.dataset.findTitle).filter(Boolean))];
+  if(!titles.length)return;
+  const note=document.createElement('span');
+  note.className='enrich-note';
+  note.textContent=' · 🔎 finding & checking real links…';
+  matchesNote.appendChild(note);
+  try{
+    await fillEnrichCache(cfg.name,titles);              // no call for titles the board already verified
+    if(seq!==enrichSeq){note.remove();return;}          // a newer path rendered — drop this stale result
+    const n=upgradeFindLinks(links);
+    note.textContent=n?` · 🔗 ${n} real link${n>1?"s":""} found & checked live`:"";
+  }catch(err){
+    // a 429 here means the shared worker budget is spent — flip to canned so we
+    // stop firing (and silently failing) one more enrichment call per submission
+    if(err&&err.rateLimited){rateLimited=true;showLimitBanner();}
+    if(seq===enrichSeq)note.remove();                    // best-effort: quietly keep the search links
+  }
+}
+
+/* Board-card enrichment (A2) — the same dig-real-local-pages loop as the path,
+   scoped to the sketch board's cards (#grid a.step-find). Runs LIVE only, once
+   per freshly-built board, AFTER it renders. Best-effort: any failure keeps the
+   honest search links untouched, so it can only add. Shares enrichCache with the
+   path, so a later ask over the same board pays nothing more. */
+let boardEnrichSeq=0;
+async function enrichBoard(cfg){
+  const seq=++boardEnrichSeq;
+  const titles=[...new Set([...$('grid').querySelectorAll('a.step-find')].map(a=>a.dataset.findTitle).filter(Boolean))];
+  if(!titles.length){hideSketchLoading();return;}       // nothing to search — drop the box
+  showEnrichLoading(cfg.name);                          // keep the big loading card up: we're now out finding real links
+  const note=document.createElement('span');            // the persistent one-line result, set once the search finishes
+  note.className='enrich-note';
+  sketchStatus.hidden=false;sketchStatus.appendChild(note);
+  try{
+    await fillEnrichCache(cfg.name,titles);
+    if(seq!==boardEnrichSeq){note.remove();return;}     // a newer board built — drop this stale result (it owns the box now)
+    const n=upgradeFindLinks([...$('grid').querySelectorAll('a.step-find')]); // re-query: a filter re-render may have swapped the nodes
+    note.textContent=n?` · 🔗 ${n} real link${n>1?"s":""} found & checked live`:"";
+  }catch(err){
+    if(err&&err.rateLimited){rateLimited=true;showLimitBanner();}
+    if(seq===boardEnrichSeq)note.remove();
+  }finally{
+    if(seq===boardEnrichSeq)hideSketchLoading();         // links are in (or we gave up) — take the box down
+  }
+}
+
+/* ===== result view: ranked matches grid (default) ⇄ ordered path (toggle) =====
+   One matcher call feeds both views. The grid is the ranked things that fit; the
+   path is the SAME matches poured into the join→…→money ladder. A project-shaped
+   ask ("sell my cakes", "start a…") defaults to the path; a browse-shaped ask
+   ("do some running", "meet people") defaults to the grid. Toggling re-renders the
+   cached matches — never a second API call. ===== */
+const GOAL_RE=/\b(sell|start(ing)?|set ?up|launch|found|run(ning)? a|open a|my own|make and sell|earn|get into|back into|learn to|train to|qualify)\b/i;
+let lastCfg=null,lastParsed=null,lastSentence="",lastFromCache=false,viewMode="grid",pathEnriched=false;
+
+function computeHits(cfg,parsed){
+  return (parsed.matches||[])
+    .map(m=>({entry:findEntry(cfg,m.t),reason:m.reason}))
+    .filter(x=>x.entry);
+}
+function orderHits(hits){
+  const ordered=[];
+  JOURNEY_STEPS.forEach(step=>{
+    hits.filter(h=>stepFor(h.entry)===step).forEach(h=>ordered.push({...h,step}));
+  });
+  hits.filter(h=>!ordered.some(o=>o.entry===h.entry))     // leftover types → best-fit, at the end
+      .forEach(h=>ordered.push({...h,step:stepFor(h.entry)}));
+  return ordered;
+}
+
+/* the ranked "things that fit" grid — the board card plus a highlighted reason. */
+function renderMatchesGrid(cfg,hits){
+  matchesGrid.innerHTML='';
+  hits.forEach(({entry,reason},i)=>{
+    const ri=ringIdx(cfg,entry.ring),r=cfg.rings[ri]||cfg.rings[0];
+    const c=document.createElement('article');
+    c.className='card matchcard'+(entry.anchor?' anchor':'')+(entry.pdf?' frompdf':'')+(cfg.sketch?' sketch':'');
+    c.innerHTML=`<span class="rank">${i+1}</span>
+      <div class="top"><span class="cat">${esc(entry.cat)}</span>${entry.anchor?'<span class="anchor-flag" title="Anchor — recurring, role-giving, low-pressure: the easiest kind of thing to join on your own.">⚓ Anchor</span>':''}</div>
+      <h3>${esc(entry.t)}</h3>
+      <p class="match-reason"></p>
+      <p class="rhythm"><span class="cadence">${cadenceOf(entry.rhythm)}</span> ↻ ${esc(entry.rhythm)}</p>
+      <p class="desc">${esc(entry.desc)}</p>
+      <div class="foot"><span class="ringtag r${ri<0?0:ri}">${r.emoji} ${r.desc}</span>${provenanceFor(cfg,entry)}</div>`;
+    c.querySelector('.match-reason').textContent="💬 "+String(reason).trim(); // model text → textContent, never innerHTML
+    const l=cardLink(entry,cfg.name);if(l)c.querySelector('.foot').appendChild(l);
+    matchesGrid.appendChild(c);
+  });
+}
+
+/* the same matches as an ordered path across the board's types. */
+function renderPathList(cfg,hits,sentence,fromCache){
+  const ordered=orderHits(hits);
+  pathWrap.innerHTML='';
+  const journey=document.createElement('article');
+  journey.className='journey';
+  const head=document.createElement('p');
+  head.className='journey-head';
+  head.append('Your path for: ');
+  const said=document.createElement('span');
+  said.className='said';
+  said.textContent='“'+sentence+'”';                       // user text → textContent, never innerHTML
+  head.append(said);
+  journey.appendChild(head);
+  const path=document.createElement('ol');
+  path.className='path';
+  ordered.forEach(({entry,reason,step},i)=>{
+    path.appendChild(buildStep(i+1,step,entry,reason,cfg.name));
+  });
+  journey.appendChild(path);
+  pathWrap.appendChild(journey);
+  if(!isCanned()&&!fromCache&&ordered.length&&!pathEnriched){pathEnriched=true;enrichPath(cfg,journey);} // live only, once per ask
+}
+
+/* render the current view from the cached matches; the toggle just re-runs this. */
+function applyView(){
+  const grid=viewMode!=="path";
+  $('viewGrid').setAttribute('aria-pressed',String(grid));
+  $('viewPath').setAttribute('aria-pressed',String(!grid));
+  matchesGrid.hidden=!grid;pathWrap.hidden=grid;
+  $('matchesH').textContent=grid?"✨ Your matches":"✨ Your path";
+  // honesty: in canned/demo mode the sample is FIXED and does not reflect the typed
+  // words (real per-ask matching happens live) — say so rather than claim "picked for you".
+  matchesNote.textContent=lastFromCache
+    ?"Showing an earlier saved result for this ask (cached)."
+    :isCanned()
+      ?(grid?"A fixed demo sample — on the live site these are matched to your exact words."
+            :"A fixed demo sample, shown as a plan — on the live site it's built from your exact words.")
+      :(grid?"Picked for what you told us — each card says why."
+            :"The same matches, in order — where to join, learn, give back and start.");
+  $('viewHelp').innerHTML=grid
+    ?'<b>Ranked by fit</b> — the closest handful, each with a reason. Working towards a project? Switch to the step-by-step path.'
+    :'<b>Step-by-step, in order</b> — join, learn, give back, start. Just looking around? Switch to things that fit.';
+  const hits=computeHits(lastCfg,lastParsed);
+  if(grid)renderMatchesGrid(lastCfg,hits);
+  else renderPathList(lastCfg,hits,lastSentence,lastFromCache);
+}
+
+function showResult(cfg,parsed,sentence,fromCache){
+  lastCfg=cfg;lastParsed=parsed;lastSentence=sentence;lastFromCache=fromCache;pathEnriched=false;
+  const hits=computeHits(cfg,parsed);
+  if(!hits.length){
+    setStatus("Nothing matched cleanly this time — the full board below has everything.",true);
+    return;
+  }
+  viewMode=(!fromCache&&GOAL_RE.test(sentence))?"path":"grid"; // a project-shaped ask leads with the path
+  if(typeof parsed.unmet==="string"&&parsed.unmet){
+    unmetNote.innerHTML='<b>🔔 One piece the board is missing.</b> <span id="unmetText"></span> On a full deployment this ask joins the demand log — several people asking for the same missing thing becomes a reason to start it. <a href="hackathon.html">See the demand engine from the hackathon →</a>';
+    unmetNote.querySelector('#unmetText').textContent='You asked for: '+parsed.unmet+'.';
+    unmetNote.hidden=false;
+  }else{
+    unmetNote.hidden=true;
+  }
+  matchesSection.hidden=false;
+  applyView();
+  setStatus("");
+  matchesSection.scrollIntoView({behavior:"smooth",block:"nearest"});
+}
+
+$('viewGrid').addEventListener('click',()=>{if(viewMode!=="grid"){viewMode="grid";applyView();}});
+$('viewPath').addEventListener('click',()=>{if(viewMode!=="path"){viewMode="path";applyView();}});
+
+matcherForm.addEventListener('submit',async e=>{
+  e.preventDefault();
+  const sentence=matcherInput.value.trim();
+  if(!sentence||matcherInput.disabled)return;
+  const cfg=cfgFor(placeId);
+  setBusy(true);setStatus("");
+  try{
+    const parsed=await getMatches(sentence,cfg);
+    if(!parsed||!Array.isArray(parsed.matches))throw new Error("bad shape");
+    if(!isCanned())localStorage.setItem("so_replay_"+placeId+"|"+sentence,JSON.stringify(parsed)); // replay cache: live successes only
+    if(!isCanned()&&typeof parsed.unmet==="string"&&parsed.unmet){ // demand log: distilled unmet only, never the raw sentence
+      const log=JSON.parse(localStorage.getItem("so_unmet_log")||"[]");
+      log.push(parsed.unmet);localStorage.setItem("so_unmet_log",JSON.stringify(log));
+    }
+    showResult(cfg,parsed,sentence,false);
+  }catch(err){
+    if(err&&err.rateLimited){ // daily budget spent → explicit canned sample result over the canned board
+      rateLimited=true;showLimitBanner();
+      const ccfg=sketchToConfig("Market Harborough",structuredClone(MOCK_SKETCH));
+      sketchCfg=ccfg;switchPlace(SKETCH_ID);
+      showResult(ccfg,structuredClone(MOCK_MATCH),sentence,false);
+    }else{
+      const hit=!isCanned()&&localStorage.getItem("so_replay_"+placeId+"|"+sentence);
+      let replayed=false;
+      if(hit){try{showResult(cfg,JSON.parse(hit),sentence,true);replayed=true;}catch(_){}}
+      if(!replayed)setStatus("Couldn't reach the matcher just now — no drama, the full board below has everything.",true);
+    }
+  }finally{setBusy(false);}
+});
+
+/* staged progress line while the matcher thinks — timed client-side */
+matcherForm.addEventListener('submit',()=>{
+  if(!matcherBtn.disabled)return;
+  const cfg=cfgFor(placeId);
+  const stages=[
+    "Reading how things are for you…",
+    `Checking all ${boardEntries(cfg).length} entries on this board — activities, volunteering, courses, stalls, funds…`,
+    "Writing your reasons…"
+  ];
+  setStatus(stages[0]);
+  setTimeout(()=>{if(matcherBtn.disabled&&matcherStatus.textContent===stages[0])setStatus(stages[1])},2600);
+  setTimeout(()=>{if(matcherBtn.disabled&&matcherStatus.textContent===stages[1])setStatus(stages[2])},5600);
+});
+
+/* ==================== deep links ==================== */
+/* ?place=somers|bowden|mine selects a board; ?sketch=<name> (from the front
+   door) prefills and runs the sketch immediately; ?ask=<sentence> runs the
+   matcher over whichever board ends up active (used by the index Journey card
+   to land straight on a worked path). */
+const qsPlace=QS.get("place");
+if(qsPlace&&cfgFor(qsPlace))placeId=qsPlace;
+else if(savedBoards.length&&!EXAMPLE)placeId=savedBoards[0].id;   // returning visitor: open the most recent saved board (not in example mode)
+renderPlace();
+const qsSketch=(QS.get("sketch")||"").trim();
+const qsAsk=(QS.get("ask")||"").trim();
+function runDeepAsk(){
+  if(!qsAsk||$('matcherWrap').hidden)return;   // the matcher needs an active board
+  matcherInput.value=qsAsk.slice(0,120);
+  matcherForm.requestSubmit();
+}
+if(qsSketch){
+  sketchForm.hidden=false;
+  sketchInput.value=qsSketch.slice(0,80);
+  runSketch(sketchInput.value).then(runDeepAsk);
+}else if(EXAMPLE){
+  sketchForm.hidden=false;
+  runSketch("Market Harborough").then(runDeepAsk); // one-click canned example (MOCK is on → the canned MH board)
+}else{
+  runDeepAsk();
+}
+</script>
+</body>
+</html>

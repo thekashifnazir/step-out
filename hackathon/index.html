@@ -1,0 +1,322 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Step Out — the local opportunity around you</title>
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🚪</text></svg>">
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,600;9..144,900&family=Inter:wght@400;500;600;700&display=swap');
+  :root{
+    --ink:#243244;--ink-soft:#5a6a7d;--paper:#f8f1e2;--card:#fffdf8;--line:#e7dfcf;
+    --amber:#e08a3c;--amber-deep:#c56a1f;--sky:#4a86a8;--good:#3f8a56;--warn:#b9772a;--red:#b3543f;
+    --radius:16px;--shadow:0 2px 4px rgba(36,50,68,.05),0 10px 30px rgba(36,50,68,.07);--hand:'Fraunces',serif;
+    --amber-soft:rgba(224,138,60,.09);
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{font-family:Inter,system-ui,sans-serif;background:var(--paper);color:var(--ink);line-height:1.5;-webkit-font-smoothing:antialiased}
+  .wrap{max-width:1020px;margin:0 auto;padding:0 clamp(20px,4vw,40px)}
+  a:focus-visible,button:focus-visible{outline:2px solid var(--amber-deep);outline-offset:2px;border-radius:4px}
+
+  /* ===== hero ===== */
+  .hero{padding:clamp(2.6rem,6vw,4rem) 0 clamp(1.4rem,3vw,2rem)}
+  .kicker{font:700 12.5px Inter;letter-spacing:.14em;text-transform:uppercase;color:var(--amber-deep)}
+  .hero h1{font-family:var(--hand);font-weight:900;font-size:clamp(2.9rem,7.5vw,4.6rem);letter-spacing:-.03em;line-height:.98;margin:14px 0 18px}
+  .hero .tagline{font-family:var(--hand);font-weight:600;font-size:clamp(1.25rem,2.6vw,1.7rem);line-height:1.3;letter-spacing:-.01em;max-width:26ch;margin-bottom:18px}
+  .hero .lede{color:var(--ink-soft);font-size:16.5px;max-width:58ch;margin-bottom:26px}
+  blockquote{border-left:3px solid var(--amber);padding:6px 0 6px 20px;margin:26px 0 8px;max-width:56ch}
+  blockquote p,.story blockquote p{font-family:var(--hand);font-style:italic;font-weight:400;font-size:17.5px;line-height:1.5;color:var(--ink);margin-top:0}
+  blockquote cite{display:block;font:600 12.5px Inter;font-style:normal;letter-spacing:.08em;text-transform:uppercase;color:var(--ink-soft);margin-top:8px}
+  .sec-note.sec-tail{margin-top:30px;margin-bottom:0}
+  .cta{display:inline-flex;align-items:center;gap:10px;background:var(--amber-deep);color:#fff;text-decoration:none;font:700 16px Inter;border-radius:999px;padding:15px 28px;transition:background .18s}
+  .cta:hover{background:var(--ink)}
+  .cta:active{transform:scale(.98)}
+  .cta-row{display:flex;align-items:center;gap:18px;flex-wrap:wrap}
+  .cta-ghost{font:600 14.5px Inter;color:var(--amber-deep);text-decoration:none}
+  .cta-ghost:hover{color:var(--ink)}
+
+  /* ===== section rhythm ===== */
+  section{border-top:1px solid var(--line);padding:clamp(1.3rem,2.6vw,1.9rem) 0}
+  .sec-head{display:flex;align-items:baseline;justify-content:space-between;gap:16px;flex-wrap:wrap;margin-bottom:8px}
+  .sec-head h2{font-family:var(--hand);font-weight:600;font-size:clamp(1.5rem,3vw,1.9rem);letter-spacing:-.01em}
+  .sec-head .more{font:600 13.5px Inter;color:var(--amber-deep);text-decoration:none;white-space:nowrap}
+  .sec-head .more:hover{color:var(--ink)}
+  .sec-note{color:var(--ink-soft);font-size:14.5px;max-width:65ch;margin-bottom:28px}
+  .sec-note a{color:var(--amber-deep);font-weight:600;text-decoration:none}
+  .sec-note a:hover{color:var(--ink)}
+
+  /* ===== the two-minute tour ===== */
+  .tour{display:grid;grid-template-columns:repeat(3,1fr);gap:18px;margin-top:26px}
+  .tour-step{display:flex;flex-direction:column;gap:11px;background:var(--card);border:1px solid var(--line);border-radius:var(--radius);padding:22px 20px 20px;box-shadow:var(--shadow);text-decoration:none;color:var(--ink);transition:border-color .18s}
+  .tour-step:hover{border-color:var(--amber)}
+  .tour-step:active{transform:scale(.98)}
+  .stepnum{font-family:var(--hand);font-weight:900;font-size:15px;color:#fff;background:var(--amber-deep);width:28px;height:28px;border-radius:50%;display:flex;align-items:center;justify-content:center}
+  .tour-step h3{font:700 13px Inter;letter-spacing:.14em;text-transform:uppercase;color:var(--amber-deep)}
+  .tour-step p{font-size:14.5px;color:var(--ink);flex:1}
+  .tour-step .say{font-family:var(--hand);font-style:italic;color:var(--ink-soft)}
+  .tour-step .open{font:600 13px Inter;color:var(--amber-deep)}
+  .tour-step:hover .open{color:var(--ink)}
+
+  /* ===== honesty legend ===== */
+  .legend{background:var(--card);border:1.5px dashed var(--amber);border-radius:var(--radius);padding:22px 24px;margin-top:26px;box-shadow:var(--shadow)}
+  .legend ul{list-style:none;display:flex;flex-direction:column;gap:12px}
+  .legend li{font-size:14px;color:var(--ink-soft);max-width:75ch}
+  .legend li b{color:var(--ink)}
+  .legend .status{margin-right:6px}
+
+  /* ===== surface gallery ===== */
+  .gallery{display:grid;grid-template-columns:repeat(3,1fr);gap:18px;margin-top:26px}
+  .surface{display:flex;flex-direction:column;gap:9px;background:var(--card);border:1px solid var(--line);border-radius:var(--radius);padding:20px;text-decoration:none;color:var(--ink);box-shadow:var(--shadow);transition:border-color .18s}
+  .surface:hover{border-color:var(--amber)}
+  .surface:active{transform:scale(.98)}
+  .surface--featured{grid-column:span 2;background:linear-gradient(135deg,var(--card),var(--amber-soft))}
+  .surface .meta{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+  .status{font:700 11px Inter;letter-spacing:.08em;text-transform:uppercase;border-radius:999px;padding:3px 10px;border:1.5px solid}
+  .status--live{color:var(--good);border-color:var(--good)}
+  .status--concept{color:var(--sky);border-color:var(--sky)}
+  .status--prop{color:var(--ink-soft);border-color:var(--ink-soft)}
+  .surface h3{font-family:var(--hand);font-weight:600;font-size:19px}
+  .surface--featured h3{font-size:23px}
+  .surface p{font-size:13.5px;color:var(--ink-soft);flex:1}
+  .surface .open{font:600 13px Inter;color:var(--amber-deep)}
+  .surface:hover .open{color:var(--ink)}
+
+  /* ===== numbers strip ===== */
+  .numbers{display:grid;grid-template-columns:repeat(4,1fr);gap:18px;margin-top:26px}
+  .num b{display:block;font-family:var(--hand);font-weight:900;font-size:clamp(1.9rem,4vw,2.6rem);letter-spacing:-.02em;line-height:1.1;color:var(--ink)}
+  .num span{display:block;font-size:13px;color:var(--ink-soft);margin-top:6px;max-width:24ch}
+
+  /* ===== story ===== */
+  .story p{font-family:var(--hand);font-weight:400;font-size:clamp(1.1rem,2.2vw,1.35rem);line-height:1.55;max-width:58ch;margin-top:14px}
+  .story p:first-of-type{margin-top:22px}
+  .evbox{max-width:520px;margin-top:22px} /* the lone Eval evidence card, wider than a 1/3 gallery column */
+  .story em{font-style:italic;color:var(--amber-deep)}
+
+  /* ===== footer ===== */
+  footer{border-top:2px solid var(--line);padding:26px 0 48px;color:var(--ink-soft);font-size:13.5px}
+  footer .brand{font-family:var(--hand);font-weight:600;font-size:17px;color:var(--ink);margin-bottom:6px}
+  footer p{max-width:65ch}
+  footer a{color:var(--amber-deep);font-weight:600;text-decoration:none}
+  footer a:hover{color:var(--ink)}
+
+  @media (prefers-reduced-motion: reduce){
+    *{transition:none !important}
+    .cta:active,.surface:active{transform:none}
+  }
+  @media (max-width:768px){
+    .tour{grid-template-columns:1fr}
+    .gallery{grid-template-columns:1fr}
+    .surface--featured{grid-column:auto}
+    .numbers{grid-template-columns:repeat(2,1fr)}
+    .cta{width:100%;justify-content:center}
+  }
+
+  /* ===== Step Out product nav (shared contract — stream S) ===== */
+  html{scroll-padding-top:64px}
+  .sonav{position:sticky;top:0;z-index:200;display:flex;gap:14px;align-items:center;background:var(--paper);border-bottom:1px solid var(--line);padding:10px 20px;overflow-x:auto;scrollbar-width:none}
+  .sonav::-webkit-scrollbar{display:none}
+  .sonav-brand{font-family:var(--hand);font-weight:600;font-size:17px;color:var(--ink);text-decoration:none;flex:0 0 auto}
+  .sonav-links{display:flex;gap:8px;flex:0 0 auto}
+  .sonav-links a{font:600 13px Inter,system-ui,sans-serif;color:var(--ink-soft);text-decoration:none;border:2px solid var(--line);background:var(--card);border-radius:999px;padding:6px 13px;white-space:nowrap;flex:0 0 auto;transition:all .15s}
+  .sonav-links a:hover{border-color:var(--amber)}
+  .sonav-links a[aria-current="page"]{background:var(--ink);border-color:var(--ink);color:#fff}
+  .sonav-group{font:700 10px Inter,system-ui,sans-serif;letter-spacing:.12em;text-transform:uppercase;color:var(--ink-soft);flex:0 0 auto;align-self:center;margin-left:4px}
+  .sonav-group--concepts{border-left:1px solid var(--line);padding-left:14px;margin-left:10px}
+  .sonav-links a.sonav-concept{font-size:12px;padding:5px 11px;opacity:.72}
+  .sonav-links a.sonav-concept:hover,.sonav-links a.sonav-concept[aria-current="page"]{opacity:1}
+</style>
+</head>
+<body>
+<nav class="sonav" aria-label="Step Out surfaces">
+  <a class="sonav-brand" href="index.html">🚪 Step&nbsp;Out</a>
+  <div class="sonav-links">
+    <span class="sonav-group">Use it</span>
+    <a href="step-out-somers-town-test.html">Board</a>
+    <a href="step-out-journey-test.html">Journey</a>
+    <a href="step-out-snap-test.html">Snap</a>
+    <a href="step-out-places-test.html">Places</a>
+    <span class="sonav-group sonav-group--concepts">Concepts</span>
+    <a class="sonav-concept" href="step-out-latent-test.html">Demand</a>
+    <a class="sonav-concept" href="step-out-organiser-test.html">Organisers</a>
+    <a class="sonav-concept" href="step-out-app-mock.html">App</a>
+  </div>
+</nav>
+
+<div class="wrap">
+
+  <!-- ============ hero ============ -->
+  <header class="hero">
+    <div class="kicker">Built solo in a 3h10 hackathon window · Claude Impact Lab London · 30 July 2026</div>
+    <h1>Step Out</h1>
+    <p class="tagline">What's going on around you, matched to what you actually asked for.</p>
+    <p class="lede">Local life lives in PDF newsletters, WhatsApp groups and chalkboards, invisible unless someone tells you. Step Out puts it on one board, matches it to a plain sentence about your situation, and notices what people keep asking for that doesn't exist yet.</p>
+    <div class="cta-row">
+      <a class="cta" href="step-out-somers-town-test.html?demo=1&tour=1">▶ Start the two-minute tour</a>
+      <a class="cta-ghost" href="step-out-somers-town-test.html">or start at the board →</a>
+    </div>
+  </header>
+
+  <!-- ============ the two-minute tour ============ -->
+  <section id="tour">
+    <div class="sec-head">
+      <h2>The two-minute tour</h2>
+    </div>
+    <p class="sec-note">Three things to see, in order. Each step runs its example for you, and a floating chip carries you to the next.</p>
+    <div class="tour">
+      <a class="tour-step" href="step-out-somers-town-test.html?demo=1&tour=1">
+        <span class="stepnum">1</span>
+        <h3>Ask it</h3>
+        <p>Open the board and tell it your situation, like a neighbour would: <span class="say">“I've just moved here and barely know anyone, I'd love something regular near me.”</span> Ranked matches come back, each with a specific reason, and it answers in your language: tested in Bengali and Somali, the languages of the venue's own neighbourhood.</p>
+        <span class="open">Start at the board →</span>
+      </a>
+      <a class="tour-step" href="step-out-somers-town-test.html?demo=2&tour=2">
+        <span class="stepnum">2</span>
+        <h3>Catch what's missing</h3>
+        <p>Now ask for <span class="say">“a running group, mornings, before work.”</span> There isn't one. Instead of a dead end you get a demand card: widen, connect, create, inform. The engine behind it lives on the Demand page.</p>
+        <span class="open">Fire the demand card →</span>
+      </a>
+      <a class="tour-step" href="step-out-snap-test.html?demo=1&tour=3">
+        <span class="stepnum">3</span>
+        <h3>Feed it</h3>
+        <p>Drop a photo of a noticeboard, or a whole PDF newsletter, onto Snap. Structured entries fall out, with personal contact details stripped to roles and anything date-stale flagged for re-checking.</p>
+        <span class="open">Snap a flyer →</span>
+      </a>
+    </div>
+  </section>
+
+  <!-- ============ what's real here ============ -->
+  <section>
+    <div class="sec-head">
+      <h2>What's real here</h2>
+    </div>
+    <div class="legend">
+      <ul>
+        <li><b>Demo mode</b> — hosted pages open with saved responses from real model runs, so browsing costs nobody anything and asks for nothing.</li>
+        <li><b>On the day</b> — every flow here ran live against the Claude API. This archive replays those saved responses. Today's live search lives on <a href="../board.html">the live site</a>.</li>
+        <li><span class="status status--live">Live</span> the product loop genuinely runs · <span class="status status--concept">Live concept</span> real calls, but it's the backstage engine · <span class="status status--prop">Labelled prop</span> an illustrative mock-up, labelled as one.</li>
+      </ul>
+    </div>
+  </section>
+
+  <!-- ============ use it ============ -->
+  <section id="surfaces">
+    <div class="sec-head">
+      <h2>Use it</h2>
+      <a class="more" href="step-out-somers-town-test.html">Start at the board →</a>
+    </div>
+    <p class="sec-note">The pages where the product loop actually runs: browse it, ask it, feed it. Hosted copies open in demo mode with sample responses, and the banner on each page links the live version.</p>
+    <div class="gallery">
+      <a class="surface surface--featured" href="step-out-somers-town-test.html">
+        <div class="meta"><span class="status status--live">Live</span></div>
+        <h3>The board — Somers Town</h3>
+        <p>The hackathon's own neighbourhood: real entries pulled from this month's community newsletter, each with a named source, and the live matcher on top of them.</p>
+        <span class="open">Start here →</span>
+      </a>
+      <a class="surface" href="step-out-places-test.html">
+        <div class="meta"><span class="status status--live">Live</span></div>
+        <h3>Places</h3>
+        <p>One engine, any place. Flip between the saved boards, or sketch a board for your own neighbourhood, loudly labelled until a human verifies it.</p>
+        <span class="open">Open →</span>
+      </a>
+      <a class="surface" href="step-out-snap-test.html">
+        <div class="meta"><span class="status status--live">Live</span></div>
+        <h3>Snap to board</h3>
+        <p>Drop a photo of a chalkboard or a PDF newsletter and proposed entries fall out, roles only, stamped for re-verification.</p>
+        <span class="open">Open →</span>
+      </a>
+      <a class="surface" href="step-out-journey-test.html">
+        <div class="meta"><span class="status status--live">Live</span></div>
+        <h3>Journey</h3>
+        <p>Your matches as a journey instead of a list, the same results ordered and colour-coded by what each step is for.</p>
+        <span class="open">Open →</span>
+      </a>
+    </div>
+  </section>
+
+  <!-- ============ concepts & mock-ups ============ -->
+  <section>
+    <div class="sec-head">
+      <h2>Concepts &amp; mock-ups</h2>
+    </div>
+    <p class="sec-note">What this could grow into. Real data and real model outputs where labelled, but these are sketches of the product, not the product.</p>
+    <div class="gallery">
+      <a class="surface" href="step-out-latent-test.html">
+        <div class="meta"><span class="status status--concept">Live concept</span></div>
+        <h3>Demand engine</h3>
+        <p>The loop behind the “4 people asked…” card: unmet asks get logged, cluster by need, and become demand cards with honest counts.</p>
+        <span class="open">Open →</span>
+      </a>
+      <a class="surface" href="step-out-organiser-test.html">
+        <div class="meta"><span class="status status--concept">Live concept</span></div>
+        <h3>Organisers</h3>
+        <p>The freshness loop: the people who run things confirm their own entries, so the board stays true without a central maintainer.</p>
+        <span class="open">Open →</span>
+      </a>
+      <a class="surface" href="step-out-app-mock.html">
+        <div class="meta"><span class="status status--prop">Labelled prop</span></div>
+        <h3>App</h3>
+        <p>The pocket form, same product, phone-shaped. The interface is a mock-up; the responses in it are real outputs from the build afternoon.</p>
+        <span class="open">Open →</span>
+      </a>
+    </div>
+  </section>
+
+  <!-- ============ the hackathon ============ -->
+  <section>
+    <div class="sec-head">
+      <h2>The hackathon</h2>
+    </div>
+    <p class="sec-note">Theme three of the brief asked how AI could expose opportunities locally instead of centralising them. The walk that led to this answer, the plan going in and what I'd do differently are in the <a href="../hackathon.html#writeup">writeup →</a>.</p>
+    <div class="evbox">
+      <a class="surface" href="step-out-eval.html">
+        <div class="meta"><span class="status status--prop">Build evidence</span></div>
+        <h3>Eval harness</h3>
+        <p>The 40-check battery the matcher prompt had to keep passing as it changed. A tool rather than a demo, still runnable in mock.</p>
+        <span class="open">Open →</span>
+      </a>
+    </div>
+    <div class="numbers">
+      <div class="num"><b>3h10</b><span>solo build window — 28 features, each stamped with a verify command at a commit</span></div>
+      <div class="num"><b>28</b><span>real entries on the board — every one with a named source</span></div>
+      <div class="num"><b>বাংলা</b><span>replies in your language — tested in Bengali and Somali, the venue neighbourhood's own languages</span></div>
+      <div class="num"><b>86%</b><span>of one newsletter's 21 listings changed within a year — why every entry carries a freshness flag</span></div>
+    </div>
+    <p class="sec-note sec-tail rootonly">Exactly what existed at the freeze is kept, never edited: <a href="hackathon/index.html">browse the frozen hackathon build →</a></p>
+  </section>
+
+  <!-- ============ footer ============ -->
+  <footer>
+    <div class="brand">🚪 Step Out</div>
+    <p>Surfacing invisible local opportunity. Built at Claude Impact Lab London, 30 July 2026. Real data, real sources, no accounts, no tracking. The build, including code, data and honesty labels, lives in the event repo.</p>
+    <p id="snapline" class="rootonly">This site keeps improving — the original hackathon build is preserved unchanged at <a href="hackathon/index.html">/hackathon/</a>.</p>
+    <script>if(location.pathname.includes('/hackathon/'))document.querySelectorAll('.rootonly').forEach(function(e){e.remove()});</script>
+  </footer>
+
+</div>
+<script>
+/* Museum frame — appears ONLY when this page is served from the frozen
+   /hackathon/ copy of the site. Everything above this line is the preserved
+   artifact; this bar is the frame around it, pointing back to the live site. */
+if(location.pathname.includes('/hackathon/')){
+  /* Docs-site pattern (Read the Docs / Wayback): the WHOLE banner is one big
+     link back to the live site; fixed positioning so no page layout can
+     swallow or reflow it. */
+  var __ft=document.createElement('a');
+  __ft.id='frozentop';
+  __ft.href='../index.html';
+  __ft.style.cssText='position:fixed;top:0;left:0;right:0;z-index:400;display:flex;gap:14px;align-items:center;justify-content:center;flex-wrap:wrap;background:#243244;color:#fff;padding:8px 16px;font:600 13.5px Inter,system-ui,sans-serif;text-decoration:none;box-shadow:0 3px 12px rgba(36,50,68,.3);cursor:pointer';
+  __ft.innerHTML='<span>\ud83c\udfc1 FROZEN \u2014 the hackathon build, 30 July 2026</span><span style="background:#e08a3c;color:#243244;border-radius:999px;padding:5px 15px;font-weight:700;white-space:nowrap">\u21a9 Step out to the live site</span><span id="frozenstory" style="color:#e08a3c;text-decoration:underline">or read the story</span>';
+  __ft.querySelector('#frozenstory').addEventListener('click',function(e){e.preventDefault();e.stopPropagation();location.href='../hackathon.html';});
+  document.body.prepend(__ft);
+  document.body.style.paddingTop='50px';
+  var __nav=document.querySelector('.sonav');if(__nav)__nav.style.top='46px';
+  var __fb=document.createElement('div');
+  __fb.setAttribute('id','frozenbar');
+  __fb.style.cssText='position:fixed;left:0;right:0;bottom:0;z-index:300;background:#243244;color:#fff;padding:10px 16px;text-align:center;font:600 13px Inter,system-ui,sans-serif;box-shadow:0 -4px 14px rgba(36,50,68,.18)';
+  __fb.innerHTML='\ud83c\udfc1 You\u2019re inside the frozen hackathon build \u00b7 <a href="../index.html" style="color:#e08a3c;font-weight:700">\u21a9 back to the live site</a> \u00b7 <a href="../hackathon.html" style="color:#e08a3c;font-weight:700">the story \u2192</a>';
+  document.body.appendChild(__fb);
+  document.body.style.paddingBottom='56px';
+}
+</script>
+</body>
+</html>

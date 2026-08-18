@@ -1,0 +1,68 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 540" role="img" font-family="Inter, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, sans-serif" aria-label="Architecture diagram. Anyone on the web loads static pages on Cloudflare Pages, which call one Worker that holds the API key. The Worker sends AI jobs to Claude and keeps daily caps in KV RATE. For a card's link it calls the enrich path: a KV LINKS cache returns a known place free, and on a miss it searches Brave, confirms the best result with one Haiku call, and writes it back to the cache. A planned MCP bring-your-own-agent path is designed but not built yet.">
+  <defs>
+    <marker id="ah" markerUnits="userSpaceOnUse" markerWidth="11" markerHeight="11" refX="7.5" refY="3.2" orient="auto"><path d="M0,0 L8,3.2 L0,6.4 Z" fill="#243244"/></marker>
+    <marker id="aha" markerUnits="userSpaceOnUse" markerWidth="11" markerHeight="11" refX="7.5" refY="3.2" orient="auto"><path d="M0,0 L8,3.2 L0,6.4 Z" fill="#c56a1f"/></marker>
+    <marker id="ahs" markerUnits="userSpaceOnUse" markerWidth="11" markerHeight="11" refX="7.5" refY="3.2" orient="auto"><path d="M0,0 L8,3.2 L0,6.4 Z" fill="#5a6a7d"/></marker>
+  </defs>
+
+  <rect x="6" y="6" width="988" height="528" rx="14" fill="#f8f1e2" stroke="#e7dfcf" stroke-width="1"/>
+
+  <line x1="208" y1="100" x2="266" y2="100" stroke="#243244" stroke-width="1.5" fill="none" marker-end="url(#ah)"/>
+  <text x="237" y="92" text-anchor="middle" font-size="11" fill="#5a6a7d" paint-order="stroke" stroke="#f8f1e2" stroke-width="3.5" stroke-linejoin="round">browse</text>
+  <line x1="456" y1="100" x2="506" y2="100" stroke="#243244" stroke-width="1.5" fill="none" marker-end="url(#ah)"/>
+  <text x="481" y="92" text-anchor="middle" font-size="11" fill="#5a6a7d" paint-order="stroke" stroke="#f8f1e2" stroke-width="3.5" stroke-linejoin="round">calls</text>
+
+  <line x1="712" y1="88" x2="770" y2="88" stroke="#243244" stroke-width="1.5" fill="none" marker-end="url(#ah)"/>
+  <text x="741" y="80" text-anchor="middle" font-size="11" fill="#5a6a7d" paint-order="stroke" stroke="#f8f1e2" stroke-width="3.5" stroke-linejoin="round">AI jobs</text>
+  <line x1="712" y1="130" x2="770" y2="176" stroke="#5a6a7d" stroke-width="1.25" fill="none" marker-end="url(#ahs)"/>
+  <line x1="712" y1="146" x2="770" y2="250" stroke="#5a6a7d" stroke-width="1.5" fill="none" stroke-dasharray="5 4" marker-end="url(#ahs)"/>
+
+  <line x1="612" y1="156" x2="612" y2="296" stroke="#c56a1f" stroke-width="1.9" fill="none" marker-end="url(#aha)"/>
+  <text x="620" y="212" text-anchor="start" font-size="11" font-weight="600" fill="#c56a1f" paint-order="stroke" stroke="#f8f1e2" stroke-width="3.5" stroke-linejoin="round">/enrich &#183; card links</text>
+  <line x1="712" y1="326" x2="748" y2="326" stroke="#c56a1f" stroke-width="1.9" fill="none" marker-end="url(#aha)"/>
+  <text x="753" y="330" text-anchor="start" font-size="11" font-weight="600" fill="#c56a1f" paint-order="stroke" stroke="#f8f1e2" stroke-width="3.5" stroke-linejoin="round">hit: free &#183; 0.3s</text>
+  <line x1="560" y1="364" x2="392" y2="438" stroke="#c56a1f" stroke-width="1.9" fill="none" marker-end="url(#aha)"/>
+  <text x="470" y="396" text-anchor="middle" font-size="11" font-weight="600" fill="#c56a1f" paint-order="stroke" stroke="#f8f1e2" stroke-width="3.5" stroke-linejoin="round">miss</text>
+  <line x1="448" y1="472" x2="508" y2="472" stroke="#c56a1f" stroke-width="1.9" fill="none" marker-end="url(#aha)"/>
+  <text x="478" y="464" text-anchor="middle" font-size="11" font-weight="600" fill="#c56a1f" paint-order="stroke" stroke="#f8f1e2" stroke-width="3.5" stroke-linejoin="round">candidates</text>
+  <line x1="612" y1="440" x2="612" y2="368" stroke="#c56a1f" stroke-width="1.9" fill="none" marker-end="url(#aha)"/>
+  <text x="620" y="408" text-anchor="start" font-size="11" font-weight="600" fill="#c56a1f" paint-order="stroke" stroke="#f8f1e2" stroke-width="3.5" stroke-linejoin="round">cache write</text>
+
+  <rect x="24" y="64" width="184" height="72" rx="9" fill="#fffdf8" stroke="#243244" stroke-width="1.5"/>
+  <text x="116" y="96" text-anchor="middle" font-size="13" font-weight="700" fill="#243244">Anyone on the web</text>
+  <text x="116" y="116" text-anchor="middle" font-size="11" fill="#5a6a7d">no account, just visits</text>
+
+  <rect x="272" y="64" width="184" height="72" rx="9" fill="#fffdf8" stroke="#243244" stroke-width="1.5"/>
+  <text x="364" y="96" text-anchor="middle" font-size="13" font-weight="700" fill="#243244">Cloudflare Pages</text>
+  <text x="364" y="116" text-anchor="middle" font-size="11" fill="#5a6a7d">the static site</text>
+
+  <rect x="512" y="52" width="200" height="104" rx="9" fill="#fffdf8" stroke="#243244" stroke-width="1.5"/>
+  <text x="612" y="84" text-anchor="middle" font-size="13" font-weight="700" fill="#243244">Worker: step-out-proxy</text>
+  <text x="612" y="106" text-anchor="middle" font-size="11" fill="#5a6a7d">holds the API key</text>
+  <text x="612" y="126" text-anchor="middle" font-size="11" fill="#5a6a7d">pins Haiku &#183; rate-limits</text>
+
+  <rect x="776" y="48" width="200" height="80" rx="9" fill="#fffdf8" stroke="#243244" stroke-width="1.5"/>
+  <text x="876" y="80" text-anchor="middle" font-size="13" font-weight="700" fill="#243244">Claude</text>
+  <text x="876" y="101" text-anchor="middle" font-size="11" fill="#5a6a7d">matcher &#183; sketcher</text>
+  <text x="876" y="119" text-anchor="middle" font-size="11" fill="#5a6a7d">extraction &#183; verify</text>
+
+  <rect x="776" y="150" width="200" height="56" rx="9" fill="#fffdf8" stroke="#243244" stroke-width="1.5"/>
+  <text x="876" y="176" text-anchor="middle" font-size="13" font-weight="700" fill="#243244">KV: RATE</text>
+  <text x="876" y="194" text-anchor="middle" font-size="11" fill="#5a6a7d">daily caps, per visitor + site</text>
+
+  <rect x="776" y="226" width="200" height="60" rx="9" fill="#fffdf8" stroke="#5a6a7d" stroke-width="1.5" stroke-dasharray="5 4"/>
+  <text x="876" y="252" text-anchor="middle" font-size="13" font-weight="700" fill="#5a6a7d">MCP &#183; bring-your-own-agent</text>
+  <text x="876" y="270" text-anchor="middle" font-size="11" fill="#5a6a7d">designed, not built yet</text>
+
+  <rect x="512" y="300" width="200" height="64" rx="9" fill="#fffdf8" stroke="#243244" stroke-width="1.5"/>
+  <text x="612" y="328" text-anchor="middle" font-size="13" font-weight="700" fill="#243244">KV: LINKS cache</text>
+  <text x="612" y="347" text-anchor="middle" font-size="11" fill="#5a6a7d">a place searched once</text>
+
+  <rect x="248" y="440" width="200" height="64" rx="9" fill="#fffdf8" stroke="#243244" stroke-width="1.5"/>
+  <text x="348" y="468" text-anchor="middle" font-size="13" font-weight="700" fill="#243244">Brave Search</text>
+  <text x="348" y="487" text-anchor="middle" font-size="11" fill="#5a6a7d">finds the card's link</text>
+
+  <rect x="512" y="440" width="200" height="64" rx="9" fill="#fffdf8" stroke="#243244" stroke-width="1.5"/>
+  <text x="612" y="468" text-anchor="middle" font-size="13" font-weight="700" fill="#243244">confirm &#183; 1 Haiku call</text>
+  <text x="612" y="487" text-anchor="middle" font-size="11" fill="#5a6a7d">loads and on topic</text>
+</svg>
