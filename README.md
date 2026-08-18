@@ -56,13 +56,22 @@ Repo map:
 
 ```
 index.html  board.html  snap.html  about.html   the live product
-hackathon.html                         the build story
-hackathon/                             the original build, frozen and unchanged
-worker/                                the Cloudflare Worker: proxy + /enrich (worker.js, enrich.js)
+hackathon.html                                  the build story
+hackathon/                                      the original build, frozen and unchanged
+worker/                                         the Cloudflare Worker: proxy + /enrich (worker.js, enrich.js)
 README.md  LICENSE  arch.svg  board.jpg
 ```
 
 Two harnesses guard it: a 180-check browser suite, and an end-to-end test of the published output. The 40-check matcher battery is still runnable in mock.
+
+## Where to look
+
+If you're reading the code, the parts worth your time:
+
+- `worker/worker.js` — the proxy: the API key held server-side, the model pinned to Haiku, per-IP and per-day rate limits in KV, and an origin allowlist.
+- `worker/enrich.js` — the cost engineering: the `/enrich` cache-first loop (KV cache, then Brave, then one Haiku call to confirm, then cache the result).
+- `board.html` — the product itself: the sketcher, the matcher, and the first-week path, all client-side over the proxy.
+- `hackathon/step-out-eval.html` — the 40-check matcher eval battery, runnable in mock.
 
 ## The pages
 
@@ -76,7 +85,9 @@ Two harnesses guard it: a 180-check browser suite, and an end-to-end test of the
 
 A solo three-hour-ten-minute build at Claude Impact Lab London on 30 July 2026, run as one integrator session orchestrating parallel Claude Code agent streams in git worktrees, each owning disjoint files and each feature stamped against the commit it passed at. Twenty-eight landed that way.
 
-The site has been tidied up and condensed since, into what you're reading about now. The original is frozen at [/hackathon/](https://stepout.kashifnazir.com/hackathon/index.html) so you can compare. The full story, including what I'd do differently, is in [the writeup](https://stepout.kashifnazir.com/hackathon.html).
+The site has been tidied up and condensed since, into what you're reading about now. The original is frozen at [/hackathon/](https://stepout.kashifnazir.com/hackathon/index.html) so you can compare.
+
+The one thing I'd change for my next hackathon is fewer features. Three or four polished properly would have made a better demo than twenty-eight that mostly work. The full story, including the rest of what I'd do differently, is in [the writeup](https://stepout.kashifnazir.com/hackathon.html).
 
 ## Reuse
 
